@@ -1,0 +1,218 @@
+//// ------------------------------------------------------
+//// THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+//// ------------------------------------------------------
+
+Table User {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  deletedAt DateTime
+  email String [unique, not null]
+  password String [not null]
+  firstname String
+  lastname String
+  avatar Media
+  avatarId String [unique]
+  media Media [not null]
+  tasks Task [not null]
+  tags Tag [not null]
+  resetToken Token
+  status Status
+  role Role [not null]
+  roleId String [not null]
+  ownerOf Account
+  ownerOfId String [unique]
+  account Account [not null]
+  accountId String [not null]
+}
+
+Table Account {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  member User [not null]
+  owner User
+  organization Organization
+  stripeCustomerId String [unique]
+  subscriptions Subscription [not null]
+  status Status
+  invitations Invitation [not null]
+}
+
+Table Subscription {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  stripeSubscriptionId String [unique]
+  stripeCreated DateTime
+  stripeCanceledAt DateTime
+  stripeCancelAt DateTime
+  stripeCancelAtPeriodEnd Boolean
+  stripeCurrentPeriodStart DateTime
+  stripeCurrentPeriodEnd DateTime
+  stripeProductName String
+  stripeProductId String
+  stripeProductPrice Int
+  stripeProductCurrency String
+  account Account
+  accountId String [not null]
+  stripeSubscriptionStatus StripeSubscriptionStatus
+}
+
+Table Role {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  name String [unique, not null]
+  users User [not null]
+  permissions Permission [not null]
+}
+
+Table Permission {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  name String [not null]
+  roles Role [not null]
+}
+
+Table Token {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  expiresAt DateTime [not null]
+  token String [not null]
+  user User [not null]
+  userId String [unique, not null]
+}
+
+Table Invitation {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  email String
+  role String
+  account Account [not null]
+  accountId String [not null]
+  token InvitationToken
+}
+
+Table InvitationToken {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  expiresAt DateTime [not null]
+  token String [not null]
+  invitation Invitation [not null]
+  invitationId String [unique, not null]
+}
+
+Table Task {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  published Boolean [not null, default: false]
+  title String [not null]
+  description String
+  createdBy User
+  createdById String
+  tags Tag [not null]
+  status ProgressStatus [default: 'open']
+}
+
+Table Tag {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  name String [unique, not null]
+  tasks Task [not null]
+  slug String [unique, not null]
+  createdBy User
+  createdById String
+}
+
+Table Organization {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  name String [not null]
+  line1 String
+  line2 String
+  zip String
+  city String
+  country String
+  account Account
+  accountId String [unique]
+}
+
+Table Media {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  filename String
+  originalFilename String
+  mimeType String
+  size Int
+  path String
+  url String
+  collection String
+  user User
+  userId String
+  avatarUser User
+  avatarUserId String [unique]
+}
+
+Enum StripeSubscriptionStatus {
+  incomplete
+  incomplete_expired
+  trialing
+  active
+  past_due
+  canceled
+  unpaid
+}
+
+Enum Status {
+  ACTIVE
+  PENDING
+  BLOCKED
+}
+
+Enum RoleOption {
+  ADMIN
+  USER
+}
+
+Enum MediaType {
+  TEXT
+  VIDEO
+}
+
+Enum ProgressStatus {
+  done
+  open
+}
+
+Ref: User.roleId > Role.id
+
+Ref: User.ownerOfId > Account.id
+
+Ref: User.accountId > Account.id
+
+Ref: Subscription.accountId > Account.id [delete: Cascade]
+
+Ref: Token.userId - User.id [delete: Cascade]
+
+Ref: Invitation.accountId > Account.id [delete: Cascade]
+
+Ref: InvitationToken.invitationId - Invitation.id [delete: Cascade]
+
+Ref: Task.createdById > User.id
+
+Ref: Tag.createdById > User.id
+
+Ref: Organization.accountId - Account.id
+
+Ref: Media.userId - User.id
+
+Ref: Media.avatarUserId - User.id

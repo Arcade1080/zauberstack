@@ -1,0 +1,46 @@
+
+ARG NODE_VERSION
+ARG BUILDER
+
+###########################################
+# Install client in builder image
+###########################################
+FROM ${BUILDER} as build
+
+ARG VITE_API_URL
+ARG VITE_FILE_SERVER_URL
+
+# Set working directory
+WORKDIR /usr/src/build
+
+ENV VITE_API_URL=https://$VITE_API_URL
+ENV VITE_FILE_SERVER_URL=https://$VITE_FILE_SERVER_URL
+
+RUN yarn workspace client build
+# Only use the dependencies of the api package in the root node_modules-folder
+RUN yarn workspaces focus client --production
+
+
+###########################################
+# Create a lightweight runtime image
+###########################################
+
+FROM node:${NODE_VERSION}-alpine as client
+
+WORKDIR /usr/app
+
+COPY --from=build --chown=node:node /usr/src/build/node_modules ./node_modules
+COPY --from=build --chown=node:node /usr/src/build/packages/client/package*.json ./
+COPY --from=build --chown=node:node /usr/src/build/packages/client/vite.config.js ./
+COPY --from=build --chown=node:node /usr/src/build/packages/client/dist ./dist
+
+EXPOSE 3000
+
+# Ensure the app directory is owned by the node user
+RUN chown -R node:node /usr/app
+
+# Run container as non-root (unprivileged) user
+# The "node" user is provided in the Node.js Alpine base image
+USER node
+
+CMD [ "npm", "run", "serve" ]

@@ -1,0 +1,9 @@
+.section {
+  padding: var(--mantine-spacing-section-paddingY-mobile_large) 0;
+  gap: var(--mantine-spacing-section-gap-mobile_large);
+
+  @media (min-width: $mantine-breakpoint-xs) {
+    padding: var(--mantine-spacing-section-paddingY-desktop_large) 0;
+    gap: var(--mantine-spacing-section-gap-desktop_large);
+  }
+}

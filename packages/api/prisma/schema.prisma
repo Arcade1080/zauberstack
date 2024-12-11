@@ -1,0 +1,213 @@
+
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator dbml {
+  provider = "prisma-dbml-generator"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime? 
+  email     String  @unique 
+  password  String
+  firstname String?
+  lastname  String?
+  avatar    Media?   @relation("UserAvatar")
+  avatarId  String?  @unique
+  media Media[]
+  tasks Task[]
+  tags Tag[]
+  resetToken Token?
+  status Status?
+  role Role @relation(fields: [roleId], references: [id])
+  roleId String
+  ownerOf Account? @relation(name: "Owner", fields: [ownerOfId], references: [id])
+  ownerOfId String? @unique
+  account Account @relation(name: "Member", fields: [accountId], references: [id])
+  accountId String 
+}
+
+model Account {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  member User[] @relation("Member") 
+  owner  User? @relation("Owner")
+  organization Organization?
+  stripeCustomerId String? @unique
+  subscriptions Subscription[]
+  status Status?
+  invitations Invitation[]
+}
+
+model Subscription {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  stripeSubscriptionId String? @unique
+  stripeCreated DateTime?
+  stripeCanceledAt DateTime?
+  stripeCancelAt DateTime?
+  stripeCancelAtPeriodEnd Boolean?
+  stripeCurrentPeriodStart DateTime?
+  stripeCurrentPeriodEnd DateTime?
+  stripeProductName String?
+  stripeProductId String?
+  stripeProductPrice Int?
+  stripeProductCurrency String?
+  account Account? @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  accountId String
+  stripeSubscriptionStatus StripeSubscriptionStatus?
+}
+
+enum StripeSubscriptionStatus {
+  incomplete
+  incomplete_expired
+  trialing
+  active
+  past_due
+  canceled
+  unpaid
+}
+
+model Role{
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name String @unique
+  users User[]
+  permissions Permission[]
+}
+
+model Permission{
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name String
+  roles Role[]
+}
+
+
+enum Status {
+  ACTIVE
+  PENDING
+  BLOCKED
+}
+
+enum RoleOption {
+  ADMIN
+  USER
+}
+
+model Token {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  expiresAt DateTime
+  token String @db.Text
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @unique
+}
+
+model Invitation {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  email      String?
+  role       String?
+  account    Account @relation(fields: [accountId], references: [id], onDelete: Cascade) 
+  accountId  String 
+  token InvitationToken?
+   
+}
+
+model InvitationToken {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  expiresAt DateTime
+  token String @db.Text
+  invitation Invitation @relation(fields: [invitationId], references: [id] , onDelete: Cascade)
+  invitationId String @unique
+}
+
+model Task {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  published Boolean  @default(false)
+  title     String
+  description   String?
+  createdBy    User? @relation(fields: [createdById], references: [id])
+  createdById  String?
+  tags Tag[] 
+  status ProgressStatus? @default(open)
+}
+
+model Tag {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name      String   @unique
+  tasks Task[]
+  slug      String   @unique
+  createdBy    User? @relation(fields: [createdById], references: [id])
+  createdById  String?
+}
+
+model Organization{
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name String
+  line1 String?
+  line2 String?
+  zip String?
+  city String?
+  country String?
+  account Account? @relation( fields: [accountId], references: [id])
+  accountId String? @unique
+}
+
+model Media {
+    id        String   @id @default(uuid())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    filename  String?
+    originalFilename String?
+    mimeType  String?
+    size      Int?
+    path      String?
+    url       String?
+    collection String?
+    
+    // Relation to the user who owns this media
+    user      User?     @relation(fields: [userId], references: [id])
+    userId    String?
+
+  // Relation for avatar
+    avatarUser User?   @relation("UserAvatar", fields: [avatarUserId], references: [id])
+    avatarUserId String? @unique
+}
+ 
+
+enum MediaType {
+  TEXT
+  VIDEO
+}
+
+enum ProgressStatus {
+  done
+  open
+}
+

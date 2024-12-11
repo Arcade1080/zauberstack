@@ -1,0 +1,7 @@
+.container {
+  position: absolute;
+  top: 9px;
+  right: 12px;
+  z-index: 2000;
+  background: transparent;
+}

@@ -1,0 +1,15 @@
+{
+  "semi": true,
+  "tabWidth": 2,
+  "singleQuote": true,
+  "trailingComma": "all",
+  "bracketSameLine": false,
+  "overrides": [
+    {
+      "files": "**/*.hbs",
+      "options": {
+        "parser": "angular"
+      }
+    }
+  ]
+}

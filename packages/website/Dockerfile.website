@@ -1,0 +1,72 @@
+ARG NODE_VERSION
+ARG BUILDER
+
+FROM ${BUILDER} as build
+
+# Set working directory
+WORKDIR /usr/src/build
+
+# Build
+
+# nextjs cms config
+# ARG DOMAIN
+#ARG NODE_ENV
+ # ARG ENVIRONMENT
+# ARG NEXT_FILTERED_HANDLES
+# ARG API_BEARER_TOKEN
+# ARG CMS_HOST
+# ARG MATOMO_HOST
+
+#ENV NODE_ENV=${NODE_ENV}
+# ENV ENVIRONMENT=${ENVIRONMENT}
+# ENV NEXT_FILTERED_HANDLES=${NEXT_FILTERED_HANDLES}
+
+#ENV NEXT_TELEMETRY_DISABLED=1
+# ENV API_BEARER_TOKEN=$API_BEARER_TOKEN
+# ENV NEXT_API_HOST=https://$CMS_HOST
+# ENV NEXT_IMAGE_DOMAIN=$DOMAIN
+# ENV NEXT_PUBLIC_MATOMO_URL=https://$MATOMO_HOST
+
+# busts cache from craftcms project.yaml dateModified
+# ARG CACHEBUSTER
+
+
+### Build + Prune ### 
+# Build process might require dev dependencies. Therefore, we prune AFTER this
+RUN yarn workspace website build
+# Prune node_modules
+RUN yarn workspaces focus website --production
+
+
+FROM node:${NODE_VERSION}-alpine as website
+
+ARG NODE_ENV
+
+ENV NODE_ENV=${NODE_ENV}
+
+WORKDIR /usr/app
+
+RUN npm install -g pm2@4.5.6
+
+COPY --from=build --chown=node:node /usr/src/build/node_modules ./node_modules
+COPY --from=build --chown=node:node /usr/src/build/packages/website/package.json ./
+COPY --from=build --chown=node:node /usr/src/build/packages/website/.next ./.next
+COPY --from=build --chown=node:node /usr/src/build/packages/website/public ./public
+COPY --from=build --chown=node:node /usr/src/build/packages/website/next.config.mjs ./
+COPY --chown=node:node ./process.yml ./
+
+# image cache folder
+RUN mkdir -p .next/cache/images && chown node:node .next/cache/images
+
+# Ensure the app directory is owned by the node user
+RUN chown -R node:node /usr/app
+
+# Run container as non-root (unprivileged) user
+# The "node" user is provided in the Node.js Alpine base image
+USER node
+
+# Expose the listening port next
+EXPOSE 5000
+
+# Launch app with PM2
+CMD [ "pm2-runtime", "/usr/app/process.yml"]

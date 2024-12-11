@@ -1,0 +1,7 @@
+.icon {
+  color: light-dark(var(--mantine-color-dimmed), var(--mantine-color-dark-3));
+}
+
+.title {
+  font-weight: 600;
+}

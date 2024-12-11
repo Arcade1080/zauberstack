@@ -1,0 +1,4 @@
+.font-size-display {
+  font-size: var(--mantine-fontsize-display);
+  line-height: var(--mantine-lineheight-display);
+}

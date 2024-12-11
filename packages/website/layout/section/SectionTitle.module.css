@@ -1,0 +1,19 @@
+.wrapper {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.title {
+  font-size: var(--mantine-h2-font-size);
+  margin: 0;
+  @media (min-width: $mantine-breakpoint-xs) {
+    text-align: center;
+    font-size: var(--mantine-h1-font-size);
+  }
+}
+
+.description {
+  @media (min-width: $mantine-breakpoint-xs) {
+    text-align: center;
+  }
+}

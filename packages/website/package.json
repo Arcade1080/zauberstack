@@ -1,0 +1,31 @@
+{
+  "name": "website",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 5000",
+    "build": "next build",
+    "start": "next start -p 5000",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@mantine/core": "7.12.1",
+    "@mantine/form": "^7.12.1",
+    "@mantine/hooks": "7.12.1",
+    "@tabler/icons-react": "^2.44.0",
+    "next": "14.0.1",
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "20.8.10",
+    "@types/react": "18.2.35",
+    "@types/react-dom": "18.2.14",
+    "eslint": "8.53.0",
+    "eslint-config-next": "14.0.1",
+    "postcss": "^8.4.31",
+    "postcss-preset-mantine": "1.12.0",
+    "postcss-simple-vars": "^7.0.1",
+    "typescript": "5.2.2"
+  }
+}

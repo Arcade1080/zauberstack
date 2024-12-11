@@ -1,0 +1,111 @@
+.navbar {
+  height: 100%;
+  border-radius: var(--mantine-radius-default);
+  background-color: light-dark(
+    var(--mantine-color-gray-0),
+    var(--mantine-color-dark-8)
+  );
+  padding: var(--mantine-spacing-md) var(--mantine-radius-lg);
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  font-size: var(--mantine-font-size-md);
+  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-1));
+  padding: var(--mantine-spacing-xs) var(--mantine-spacing-sm);
+  border-radius: var(--mantine-radius-default);
+  font-weight: 500;
+  transition: width var(--app-shell-transition-duration)
+    var(--app-shell-transition-timing-function);
+
+  @mixin hover {
+    background-color: light-dark(
+      var(--mantine-color-gray-1),
+      var(--mantine-color-dark-7)
+    );
+    color: light-dark(var(--mantine-color-gray-9), var(--mantine-color-white));
+
+    .linkIcon {
+      color: light-dark(
+        var(--mantine-color-gray-9),
+        var(--mantine-color-white)
+      );
+    }
+  }
+}
+
+.menuToggle {
+  align-items: center;
+  justify-items: center;
+}
+
+.menuToggle .linkIcon {
+  margin-right: 0px;
+}
+
+.linkActive {
+  &,
+  &:hover {
+    background-color: light-dark(
+      var(--mantine-color-gray-2),
+      var(--mantine-color-dark-7)
+    );
+    color: light-dark(var(--mantine-color-gray-9), var(--mantine-color-white));
+  }
+
+  .linkIcon {
+    color: light-dark(var(--mantine-color-gray-9), var(--mantine-color-white));
+  }
+}
+.linkIcon {
+  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-2));
+  margin-right: var(--mantine-spacing-sm);
+  width: rem(24px);
+  height: rem(24px);
+}
+
+.header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+/* Condensed navbar */
+
+.isCondensed .linkLabel {
+  display: none;
+}
+
+.isCondensed .linkIcon {
+  margin-right: none;
+}
+.isCondensed .link {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  justify-content: center;
+  /* transition: all var(--app-shell-transition-duration)
+    var(--app-shell-transition-timing-function); */
+}
+
+.isCondensed .link > svg {
+  margin-right: 0px;
+}
+.isCondensed .header {
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: var(--mantine-spacing-xs);
+}
+
+/* Mobile navbar */
+
+.isMobile .header {
+  display: none;
+}
+
+.versionNumber {
+  color: light-dark(var(--mantine-color-gray-6), var(--mantine-color-dark-1));
+}

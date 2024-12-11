@@ -1,0 +1,11 @@
+.container {
+  display: flex;
+  flex-direction: row;
+  gap: var(--mantine-spacing-sm);
+}
+
+.container.condensed {
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}

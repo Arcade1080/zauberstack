@@ -1,0 +1,31 @@
+/** Styling for standard mantine DataTable + DataTable add-ons */
+
+.header {
+  th {
+    font-size: rem(14px);
+    padding: var(--mantine-spacing-sm) var(--mantine-spacing-xs);
+    font-weight: 700;
+    border-bottom: 1px solid var(--mantine-datatable-row-border-color);
+  }
+  .checkbox {
+    display: none;
+  }
+}
+
+.td {
+  padding: var(--mantine-spacing-sm) var(--mantine-spacing-xs);
+}
+
+.selectedRecords {
+  th:not(:first-child):not(:nth-child(2)) {
+    > div {
+      color: transparent;
+    }
+    pointer-events: none;
+  }
+}
+
+.pagination {
+  background: transparent;
+  border-top: none;
+}

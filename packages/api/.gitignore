@@ -1,0 +1,17 @@
+node_modules/
+dist/
+prisma/*.db
+coverage/
+
+.DS_Store
+
+prisma/migrations/dev/
+.env
+
+tmp/*
+*.webm
+*.jpg
+
+public/*
+
+

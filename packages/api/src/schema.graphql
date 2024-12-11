@@ -1,0 +1,323 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+input AcceptInvitationInput {
+  token: String!
+  user: CreateUserInput!
+}
+
+type Account {
+  """Identifies the date and time when the object was created."""
+  createdAt: Date!
+  id: String!
+  subscriptions: [AccountSubscription!]!
+
+  """Identifies the date and time when the object was last updated."""
+  updatedAt: Date!
+}
+
+type AccountSubscription {
+  """Identifies the date and time when the object was created."""
+  createdAt: Date!
+  id: ID!
+  plan: String
+  stripeCancelAt: Date
+  stripeCancelAtPeriodEnd: Boolean
+  stripeCanceledAt: Date
+  stripeCurrentPeriodEnd: Date
+  stripeCurrentPeriodStart: Date
+  stripeProductId: String
+  stripeProductName: String
+  stripeSubscriptionId: String
+
+  """Identifies the date and time when the object was last updated."""
+  updatedAt: Date!
+}
+
+input AddTagsToTasksInput {
+  tagIds: [String!]!
+  taskIds: [String!]!
+}
+
+type Auth {
+  """JWT access token"""
+  accessToken: String!
+
+  """Expiration of access Token"""
+  accessTokenExpires: String!
+
+  """JWT refresh token"""
+  refreshToken: String!
+  user: User!
+}
+
+input ChangePasswordInput {
+  newPassword: String!
+  oldPassword: String!
+}
+
+input CreateOrganizationInput {
+  name: String!
+}
+
+input CreateTaskInput {
+  description: String!
+  tags: [String!]
+  title: String!
+}
+
+input CreateUserInput {
+  email: String!
+  password: String!
+  role: String
+}
+
+"""Date custom scalar type"""
+scalar Date
+
+input ForgotPasswordInput {
+  email: String!
+}
+
+type Invitation {
+  createdAt: Date
+  email: String
+  id: String
+  role: String
+}
+
+input InviteUserInput {
+  email: String!
+  role: String!
+}
+
+input InviteesInput {
+  invitees: [InviteUserInput!]!
+}
+
+type Mutation {
+  acceptInvitation(data: AcceptInvitationInput!): Token!
+  addTagstoTasks(data: AddTagsToTasksInput!): [Task!]!
+  changePassword(data: ChangePasswordInput!): User!
+  createTag(name: String!): Tag!
+  createTask(data: CreateTaskInput!): Task!
+  deleteAccount(accountId: String!): Account!
+  deleteInvitation(invitationId: String!): Invitation!
+  deleteTagById(id: String!): Tag!
+  deleteTags(tagIds: [String!]!): String!
+  deleteTaskById(taskId: String!): Task!
+  deleteTasks(taskIds: [String!]!): String!
+  deleteTeamMember(memberId: String!): Account!
+  inviteUsers(data: InviteesInput!): String!
+  refreshToken: Token!
+  requestCheckoutUrl(productId: String!): String!
+  requestCustomerPortalUrl: String!
+  requestMagicLink(data: RequestMagicLinkInput!): String!
+  resetPassword(data: ResetPasswordInput!): User!
+  sendResetPasswordLink(data: ForgotPasswordInput!): String!
+  signIn(data: SignInInput!): Auth!
+  signInWithMagicLink(data: SignInWithMagicLinkInput!): Auth!
+  signUp(data: SignUpDto!): Auth!
+  toggleTaskStatus(taskId: String!): Task!
+  updateTag(id: String!, name: String!): Tag!
+  updateTask(data: UpdateTaskInput!): Task!
+  updateUser(data: UpdateUserInput!): User!
+}
+
+"""
+Possible directions in which to order a list of items when provided an `orderBy` argument.
+"""
+enum OrderDirection {
+  asc
+  desc
+}
+
+type PageInfo {
+  endCursor: String
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+}
+
+type Permission {
+  """Identifies the date and time when the object was created."""
+  createdAt: Date!
+  id: ID!
+  name: String!
+
+  """Identifies the date and time when the object was last updated."""
+  updatedAt: Date!
+}
+
+type Plan {
+  currency: String
+  interval: String
+  planId: String
+  price: Int
+  productId: String
+  productName: String
+}
+
+enum ProgressStatus {
+  done
+  open
+}
+
+type Query {
+  deleteMember(memberId: String!): [User!]!
+  getActiveSubscription: AccountSubscription
+  getAvailablePlans: [Plan!]!
+  getInvitations: [Invitation!]!
+  getMembers(first: Int): [User!]!
+  getTags(after: String, before: String, first: Int, last: Int, onlyInUse: Boolean, orderBy: TagOrder, query: String, skip: Int): TagConnection!
+  getTaskById(taskId: String!): Task!
+  getTasks(after: String, before: String, first: Int, last: Int, orderBy: TaskOrder, query: String, skip: Int, status: String, tags: [String!]): TaskConnection!
+  me: User!
+  tag(id: String!): Tag!
+}
+
+input RequestMagicLinkInput {
+  email: String!
+}
+
+input ResetPasswordInput {
+  password: String!
+  token: String!
+}
+
+type Role {
+  """Identifies the date and time when the object was created."""
+  createdAt: Date!
+  id: ID!
+  name: String!
+  permissions: [Permission!]!
+
+  """Identifies the date and time when the object was last updated."""
+  updatedAt: Date!
+}
+
+input SignInInput {
+  email: String!
+  password: String!
+}
+
+input SignInWithMagicLinkInput {
+  token: String!
+}
+
+input SignUpDto {
+  organization: CreateOrganizationInput!
+  owner: CreateUserInput!
+}
+
+type Tag {
+  """Identifies the date and time when the object was created."""
+  createdAt: Date!
+  id: ID!
+  name: String
+  slug: String
+  tasks: [Task!]
+
+  """Identifies the date and time when the object was last updated."""
+  updatedAt: Date!
+}
+
+type TagConnection {
+  edges: [TagEdge!]
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type TagEdge {
+  cursor: String!
+  node: Tag!
+}
+
+input TagOrder {
+  direction: OrderDirection!
+  field: String!
+}
+
+type Task {
+  """Identifies the date and time when the object was created."""
+  createdAt: Date!
+  createdBy: User
+  description: String
+  id: ID!
+  published: Boolean
+  status: ProgressStatus
+  tags: [Tag!]
+  title: String
+
+  """Identifies the date and time when the object was last updated."""
+  updatedAt: Date!
+}
+
+type TaskConnection {
+  edges: [TaskEdge!]
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type TaskEdge {
+  cursor: String!
+  node: Task!
+}
+
+input TaskOrder {
+  direction: OrderDirection!
+  field: TaskOrderField!
+}
+
+"""Properties by which task connections can be ordered."""
+enum TaskOrderField {
+  content
+  createdAt
+  id
+  published
+  title
+  updatedAt
+}
+
+type Token {
+  """JWT access token"""
+  accessToken: String!
+
+  """Expiration of access Token"""
+  accessTokenExpires: String!
+
+  """JWT refresh token"""
+  refreshToken: String!
+}
+
+input UpdateTaskInput {
+  description: String!
+  tags: [String!]
+  taskId: String!
+  title: String!
+}
+
+input UpdateUserInput {
+  avatarId: String
+  firstname: String
+  lastname: String
+}
+
+type User {
+  account: Account!
+  avatar: String
+
+  """Identifies the date and time when the object was created."""
+  createdAt: Date!
+  email: String!
+  firstname: String
+  id: String!
+  isAccountOwner: Boolean
+  lastname: String
+  plan: String
+  role: Role!
+
+  """Identifies the date and time when the object was last updated."""
+  updatedAt: Date!
+}

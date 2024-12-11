@@ -1,0 +1,26 @@
+.wrapper {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  row-gap: var(--mantine-spacing-lg);
+
+  @media (min-width: $mantine-breakpoint-sm) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 5rem;
+    column-gap: 2rem;
+    align-items: center;
+    justify-items: center;
+    margin: 0 auto;
+  }
+}
+
+.imageWrapper.imageLeft {
+  @media (min-width: $mantine-breakpoint-sm) {
+    order: -9999;
+  }
+}
+
+.contentWrapper {
+  @media (min-width: $mantine-breakpoint-sm) {
+    max-width: 512px;
+  }
+}

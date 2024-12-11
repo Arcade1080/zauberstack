@@ -1,0 +1,11 @@
+# folders
+node_modules
+.next/
+
+
+# files
+.gitignore
+.gitattributes
+Dockerfile*
+.env*
+README.md

@@ -1,0 +1,35 @@
+.wrapper {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  row-gap: var(--mantine-spacing-lg);
+
+  @media (min-width: $mantine-breakpoint-sm) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 5rem;
+    column-gap: 2rem;
+    align-items: center;
+    justify-items: center;
+    margin: 0 auto;
+  }
+}
+
+.imageWrapper {
+  width: 100%;
+  justify-self: end;
+
+  > div {
+    position: unset !important;
+  }
+
+  @media (min-width: $mantine-breakpoint-sm) {
+    order: -9999;
+    max-width: 500px;
+  }
+}
+
+.image {
+  object-fit: contain;
+  width: 100% !important;
+  position: relative !important;
+  height: unset !important;
+}

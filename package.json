@@ -1,0 +1,49 @@
+{
+  "name": "zauber-mono",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "client": "yarn workspace client dev",
+    "api": "yarn workspace api start:dev",
+    "website": "yarn workspace website dev",
+    "init-db": "yarn workspace api migrate:dev && yarn workspace api seed",
+    "start": "concurrently --kill-others-on-fail \"yarn api\" \"yarn client\" \"yarn website\"",
+    "lint-client": "yarn workspace client lint",
+    "lint-api": "yarn workspace api lint",
+    "lint-website": "yarn workspace website lint",
+    "prettier-api": "yarn workspace api format",
+    "prettier-client": "yarn workspace client format",
+    "e2e-test-api": "yarn workspace api test:e2e",
+    "clean": "rimraf packages/*/node_modules && rimraf node_modules",
+    "reinstall": "yarn clean && yarn install",
+    "email:dev": "yarn workspace api email dev -p 3001 --dir src/mail/email_templates"
+  },
+  "dependencies": {
+    "concurrently": "^8.2.2",
+    "rimraf": "^5.0.5"
+  },
+  "resolutions": {
+    "@mantine/core": "7.12.1",
+    "@mantine/form": "7.12.1",
+    "@mantine/hooks": "7.12.1",
+    "@tabler/icons-react": "2.44.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "typescript": "5.3.3",
+    "eslint": "8.53.0",
+    "postcss": "8.4.32",
+    "postcss-preset-mantine": "1.12.0",
+    "postcss-simple-vars": "7.0.1",
+    "@types/react": "18.2.45",
+    "@types/react-dom": "18.2.17",
+    "nodemailer": "^6.9.7",
+    "reflect-metadata": "^0.1.13",
+    "webpack": "^5.89.0",
+    "clsx": "^2.0.0",
+    "prop-types": "^15.8.1"
+  },
+  "packageManager": "yarn@3.7.0"
+}

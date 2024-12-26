@@ -12,7 +12,7 @@ Test stripe locally
 
 stripe login
 stripe listen --forward-to localhost:4000/webhook
-copy signing secret to user controller (whsec_f74616f3f133d8febae343818c8779df7d937d9a439e5c28716c348043051548)
+copy signing secret to user controller (whsec_....)
 */
 type CreateSubscriptionDTO = {
   stripeSubscriptionId: string;

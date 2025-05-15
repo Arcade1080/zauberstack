@@ -4,7 +4,7 @@ import { GqlExecutionContext } from '@nestjs/graphql';
 export const CurrentUser = createParamDecorator(
   (data: unknown, context: ExecutionContext) => {
     if (context.getType() === 'http') {
-      // REST request
+      // REST
       return context.switchToHttp().getRequest().user;
     } else {
       // GraphQL request

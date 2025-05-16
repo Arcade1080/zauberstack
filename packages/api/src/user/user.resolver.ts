@@ -51,9 +51,9 @@ export class UserResolver {
   async me(@CurrentUser() user: User) {
     const user_data = await this.prismaService.user.findUnique({
       where: { id: user.id },
-      // include: {
-      //   account: { include: { subscriptions: true } },
-      // },
+      include: {
+        account: { include: { subscriptions: true } },
+      },
     });
     return user_data;
   }
@@ -267,13 +267,14 @@ export class UserResolver {
   //   return avatar?.filePath;
   // }
 
-  @ResolveField('isAccountOwner')
-  async isAccountOwner(@Parent() user: User) {
-    const accountOwner = await this.prismaService.user
-      .findUnique({ where: { id: user.id } })
-      .account({ select: { owner: true } });
-    return accountOwner?.owner.id === user.id;
-  }
+  // @ResolveField('isAccountOwner')
+  // async isAccountOwner(@Parent() user: User) {
+  //   if (!user || !user.id) return false;
+  //   const accountOwner = await this.prismaService.user
+  //     .findUnique({ where: { id: user.id } })
+  //     .account({ select: { owner: true } });
+  //   return accountOwner?.owner?.id === user.id;
+  // }
   @ResolveField('plan')
   async plan(@Parent() user: User) {
     const plan = await this.prismaService.user

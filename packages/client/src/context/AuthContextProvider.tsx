@@ -253,39 +253,39 @@ const AuthContextProvider = ({ children }: { children: React.ReactNode }) => {
           });
 
           // Session exists, get user details from backend
-          // try {
-          //   const response = await apolloClient.query({
-          //     query: QUERY_GET_ME,
-          //     context: {
-          //       headers: {
-          //         Authorization: `Bearer ${data.session.access_token}`,
-          //       },
-          //     },
-          //   });
+          try {
+            const response = await apolloClient.query({
+              query: QUERY_GET_ME,
+              context: {
+                headers: {
+                  Authorization: `Bearer ${data.session.access_token}`,
+                },
+              },
+            });
 
-          //   if (response?.data?.me) {
-          //     const userDetails = response.data.me;
-          //     const _userDetails = formatUserDetails(userDetails);
-          //     if (_userDetails) {
-          //       setUserDetails(_userDetails);
+            if (response?.data?.me) {
+              const userDetails = response.data.me;
+              const _userDetails = formatUserDetails(userDetails);
+              if (_userDetails) {
+                setUserDetails(_userDetails);
 
-          //       dispatch({
-          //         type: AuthContextActionType.IS_AUTHENTICATED,
-          //         payload: true,
-          //       });
-          //     } else {
-          //       // If we can't format user details, sign out
-          //       await signOut();
-          //     }
-          //   } else {
-          //     // If no user details, sign out
-          //     await signOut();
-          //   }
-          // } catch (error) {
-          //   console.error('Failed to fetch user details:', error);
-          //   // If we can't get user details, sign out
-          //   await signOut();
-          // }
+                dispatch({
+                  type: AuthContextActionType.IS_AUTHENTICATED,
+                  payload: true,
+                });
+              } else {
+                // If we can't format user details, sign out
+                await signOut();
+              }
+            } else {
+              // If no user details, sign out
+              await signOut();
+            }
+          } catch (error) {
+            console.error('Failed to fetch user details:', error);
+            // If we can't get user details, sign out
+            await signOut();
+          }
         } else {
           // No session, make sure we're signed out
           Storage.setUserDetails(null);

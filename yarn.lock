@@ -5714,6 +5714,7 @@ __metadata:
     "@mantine/hooks": ^7.12.1
     "@mantine/modals": ^7.12.1
     "@mantine/notifications": ^7.12.1
+    "@supabase/supabase-js": ^2.49.4
     "@tabler/icons-react": ^2.44.0
     "@types/luxon": ^3.3.7
     "@types/react": ^18.2.45

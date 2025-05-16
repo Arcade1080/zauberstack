@@ -1,0 +1,80 @@
+# =========================================
+# AUTHENTICATION & SECURITY
+# =========================================
+# JWT secrets for different token types
+JWT_ACCESS_SECRET=replace_with_strong_random_secret
+JWT_REFRESH_SECRET=replace_with_strong_random_secret
+JWT_RESET_PASSWORD_SECRET=replace_with_strong_random_secret
+JWT_INVITE_USER_SECRET=replace_with_strong_random_secret
+
+# =========================================
+# SUPABASE CONFIGURATION
+# =========================================
+# Your Supabase project URL (found in Project Settings > API)
+SUPABASE_URL=https://your-project-ref.supabase.co
+# Anon key for public operations (Project Settings > API)
+SUPABASE_ANON_KEY=your_anon_key_here
+# Service role key for privileged operations (Project Settings > API) - KEEP SECURE!
+SUPABASE_SERVICE_KEY=your_service_role_key_here
+
+# =========================================
+# DATABASE CONNECTION
+# =========================================
+# Connection with connection pooling - used for normal operations
+DATABASE_URL=postgresql://postgres:your-db-password@your-project-ref.pooler.supabase.co:6543/postgres?pgbouncer=true
+# Direct connection - required for migrations and some Prisma operations
+DIRECT_URL=postgresql://postgres:your-db-password@your-project-ref.supabase.co:5432/postgres
+
+# =========================================
+# APPLICATION URLS
+# =========================================
+# Frontend client URL
+WEB_CLIENT_URL=http://localhost:3000
+# Backend API URL
+URL=http://localhost:4000
+# URL for magic link authentication callback
+MAGIC_LINK_CALLBACK_URL=http://localhost:3000/auth/magic-link
+
+# =========================================
+# EMAIL SETTINGS
+# =========================================
+MAIL_HOST=localhost
+MAIL_PORT=1025
+MAIL_USER=user@example.com
+MAIL_PASSWORD=replace_with_your_password
+MAIL_FROM=noreply@yourdomain.com
+MAIL_TRANSPORT=smtp://${MAIL_USER}:${MAIL_PASSWORD}@${MAIL_HOST}
+
+# =========================================
+# PAYMENT INTEGRATION (STRIPE)
+# =========================================
+STRIPE_SECRET_API_KEY=sk_test_your_key_here
+STRIPE_CURRENCY=usd
+STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret_here
+
+# =========================================
+# OAUTH & SOCIAL LOGIN
+# =========================================
+# Google OAuth credentials
+GOOGLE_CLIENT_ID=your_client_id_here
+GOOGLE_CLIENT_SECRET=your_client_secret_here
+
+# =========================================
+# FILE STORAGE
+# =========================================
+# Storage provider: 'local' or 's3'
+STORAGE_DISK=local
+# Base URL for accessing stored files
+BASE_URL=http://localhost:3000
+
+# AWS S3 Configuration (only needed if STORAGE_DISK=s3)
+AWS_REGION=your-region
+AWS_ACCESS_KEY_ID=your-access-key
+AWS_SECRET_ACCESS_KEY=your-secret-key
+AWS_S3_BUCKET=your-bucket-name
+
+# =========================================
+# APPLICATION SETTINGS
+# =========================================
+# Demo mode: 0=disabled, 1=enabled
+IS_DEMO=0 

@@ -1,9 +1,8 @@
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  // The Supabase database URL will be in the format:
-  // postgresql://postgres:[PASSWORD]@[HOST]:[PORT]/postgres
-  // You'll get this from Supabase dashboard > Project Settings > Database
+  directUrl = env("DIRECT_URL")
+ 
 }
 
 generator client {

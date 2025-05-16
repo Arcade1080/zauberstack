@@ -10,7 +10,7 @@ import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 import { HttpException, HttpStatus } from '@nestjs/common';
 
 @Injectable()
-export class GqlAuthGuard extends AuthGuard('jwt') {
+export class GqlAuthGuard extends AuthGuard('supabase-jwt') {
   constructor(private reflector: Reflector) {
     super();
   }

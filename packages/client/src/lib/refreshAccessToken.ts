@@ -1,31 +1,18 @@
 import axios from 'axios';
-import Storage from '../services/Storage';
+import supabase from './supabaseClient';
 
 const { VITE_API_URL } = import.meta.env;
 const API_URL = `${VITE_API_URL}/graphql`;
 
 export const refreshAccessToken = async () => {
-  const response = await axios.post(
-    API_URL,
-    {
-      query: `
-      mutation RefreshAccessToken {
-          refreshToken {
-            accessToken
-          }
-      }`,
-    },
-    {
-      withCredentials: true,
-      headers: {
-        authorization: `Bearer ${Storage.getAuthToken()}`,
-      },
-    },
-  );
+  // Use Supabase's built-in token refresh
+  const { data, error } = await supabase.auth.refreshSession();
 
-  const accessToken = response?.data?.data?.refreshToken?.accessToken;
-  if (accessToken) {
-    Storage.setAuthToken(accessToken);
+  if (error) {
+    console.error('Error refreshing token:', error);
+    throw error;
   }
-  return accessToken;
+
+  // Return the new access token
+  return data?.session?.access_token || null;
 };

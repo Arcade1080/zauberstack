@@ -19,15 +19,17 @@ enum AuthContextActionType {
 }
 
 const initialAuthContextState: AuthContextState = {
-  isAuthenticated: Storage.getIsAuthenticated(),
+  isAuthenticated: false,
   userDetails: Storage.getUserDetails(),
 };
 
 const initialAuthContextFunctions: AuthContextFunctions = {
-  signIn: () => {},
-  signOut: () => {},
+  signIn: async () => Promise.resolve({}),
+  signUp: async () => Promise.resolve({}),
+  signOut: async () => Promise.resolve(),
   getUserDetails: () => null,
   setUserDetails: () => {},
+  loading: false,
 };
 
 const initialAuthenticationContext = {
@@ -74,40 +76,48 @@ const AuthContextProvider = ({ children }: { children: React.ReactNode }) => {
   // Legacy auth check
   const { data } = useQuery(RESIGN_IN);
 
-  const formatUserDetails = (userDetails: any): User => {
-    const {
-      avatar,
-      email,
-      id,
-      firstname,
-      plan,
-      lastname,
-      isAccountOwner,
-      role,
-      account,
-    } = userDetails;
-    const _userDetails = {
-      avatar,
-      plan,
-      email,
-      id,
-      isAccountOwner,
-      firstname,
-      lastname,
-      account: account?.id,
-      role: role?.name,
-      permissions:
-        role?.permissions?.map((permission: any) => permission.name) || [],
-    };
+  const formatUserDetails = (userDetails: any): User | null => {
+    if (!userDetails) return null;
 
-    return _userDetails;
+    try {
+      const {
+        avatar,
+        email,
+        id,
+        firstname,
+        plan,
+        lastname,
+        isAccountOwner,
+        role,
+        account,
+      } = userDetails;
+
+      const _userDetails = {
+        avatar,
+        plan,
+        email,
+        id,
+        isAccountOwner,
+        firstname,
+        lastname,
+        account: account?.id,
+        role: role?.name,
+        permissions:
+          role?.permissions?.map((permission: any) => permission.name) || [],
+      };
+
+      return _userDetails;
+    } catch (error) {
+      console.error('Error formatting user details:', error);
+      return null;
+    }
   };
 
   const signIn = async (credentials: SignInCredentials) => {
     try {
       setLoading(true);
 
-      // Sign in with Supabase
+      // Sign in with Supabase - it handles storing the session automatically
       const { session } =
         await SupabaseAuthService.signInWithPassword(credentials);
 
@@ -115,33 +125,39 @@ const AuthContextProvider = ({ children }: { children: React.ReactNode }) => {
         throw new Error('No session returned from Supabase');
       }
 
-      // Store the Supabase access token
-      Storage.setAuthToken(session.access_token);
-      Storage.setAuthenticated(true);
-
-      // Use the Supabase API to get user details from our custom backend
-      try {
-        const response = await apolloClient.query({
-          query: QUERY_GET_ME,
-          context: {
-            headers: {
-              Authorization: `Bearer ${session.access_token}`,
-            },
-          },
-        });
-
-        const userDetails = response.data.me;
-        const _userDetails = formatUserDetails(userDetails);
-        setUserDetails(_userDetails);
-      } catch (error) {
-        console.error('Failed to fetch user details:', error);
-      }
-
-      // Update auth state
       dispatch({
         type: AuthContextActionType.IS_AUTHENTICATED,
         payload: true,
       });
+
+      // Use the Supabase API to get user details from our custom backend
+      // try {
+      //   const response = await apolloClient.query({
+      //     query: QUERY_GET_ME,
+      //     context: {
+      //       headers: {
+      //         Authorization: `Bearer ${session.access_token}`,
+      //       },
+      //     },
+      //   });
+
+      //   if (response?.data?.me) {
+      //     const userDetails = response.data.me;
+      //     const _userDetails = formatUserDetails(userDetails);
+      //     if (_userDetails) {
+      //       setUserDetails(_userDetails);
+
+      //       // Update auth state
+      //       dispatch({
+      //         type: AuthContextActionType.IS_AUTHENTICATED,
+      //         payload: true,
+      //       });
+      //     }
+      //   }
+      // } catch (error) {
+      //   console.error('Failed to fetch user details:', error);
+      //   // Don't update authentication state if we couldn't get user details
+      // }
 
       return session;
     } finally {
@@ -152,17 +168,37 @@ const AuthContextProvider = ({ children }: { children: React.ReactNode }) => {
   const signUp = async (credentials: SignUpCredentials) => {
     try {
       setLoading(true);
+      // Supabase handles session storage automatically
       const { session } = await SupabaseAuthService.signUp(credentials);
 
       if (session) {
-        // If auto-confirmation is enabled, handle like sign in
-        Storage.setAuthToken(session.access_token);
-        Storage.setAuthenticated(true);
+        // Only if we have a session, try to get user details
+        try {
+          const response = await apolloClient.query({
+            query: QUERY_GET_ME,
+            context: {
+              headers: {
+                Authorization: `Bearer ${session.access_token}`,
+              },
+            },
+          });
 
-        dispatch({
-          type: AuthContextActionType.IS_AUTHENTICATED,
-          payload: true,
-        });
+          if (response?.data?.me) {
+            const userDetails = response.data.me;
+            const _userDetails = formatUserDetails(userDetails);
+            if (_userDetails) {
+              setUserDetails(_userDetails);
+
+              // Update auth state only if we have user details
+              dispatch({
+                type: AuthContextActionType.IS_AUTHENTICATED,
+                payload: true,
+              });
+            }
+          }
+        } catch (error) {
+          console.error('Failed to fetch user details after signup:', error);
+        }
       }
 
       return session;
@@ -174,8 +210,11 @@ const AuthContextProvider = ({ children }: { children: React.ReactNode }) => {
   const signOut = async () => {
     try {
       setLoading(true);
+      // Supabase signOut clears its own storage
       await SupabaseAuthService.signOut();
-      Storage.flush();
+
+      // Clear user details from our storage
+      Storage.setUserDetails(null);
 
       dispatch({
         type: AuthContextActionType.SIGN_OUT,
@@ -186,6 +225,8 @@ const AuthContextProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const setUserDetails = (userDetails: User) => {
+    if (!userDetails) return;
+
     dispatch({
       type: AuthContextActionType.SET_USER_DETAILS,
       payload: userDetails,
@@ -202,40 +243,53 @@ const AuthContextProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         setLoading(true);
 
-        // Get current session
+        // Get current session - Supabase handles retrieving from storage
         const { data } = await supabase.auth.getSession();
 
         if (data.session) {
+          dispatch({
+            type: AuthContextActionType.IS_AUTHENTICATED,
+            payload: true,
+          });
+
           // Session exists, get user details from backend
-          Storage.setAuthToken(data.session.access_token);
-          Storage.setAuthenticated(true);
+          // try {
+          //   const response = await apolloClient.query({
+          //     query: QUERY_GET_ME,
+          //     context: {
+          //       headers: {
+          //         Authorization: `Bearer ${data.session.access_token}`,
+          //       },
+          //     },
+          //   });
 
-          try {
-            const response = await apolloClient.query({
-              query: QUERY_GET_ME,
-              context: {
-                headers: {
-                  Authorization: `Bearer ${data.session.access_token}`,
-                },
-              },
-            });
+          //   if (response?.data?.me) {
+          //     const userDetails = response.data.me;
+          //     const _userDetails = formatUserDetails(userDetails);
+          //     if (_userDetails) {
+          //       setUserDetails(_userDetails);
 
-            const userDetails = response.data.me;
-            const _userDetails = formatUserDetails(userDetails);
-            setUserDetails(_userDetails);
-
-            dispatch({
-              type: AuthContextActionType.IS_AUTHENTICATED,
-              payload: true,
-            });
-          } catch (error) {
-            console.error('Failed to fetch user details:', error);
-            // If we can't get user details, sign out
-            await signOut();
-          }
+          //       dispatch({
+          //         type: AuthContextActionType.IS_AUTHENTICATED,
+          //         payload: true,
+          //       });
+          //     } else {
+          //       // If we can't format user details, sign out
+          //       await signOut();
+          //     }
+          //   } else {
+          //     // If no user details, sign out
+          //     await signOut();
+          //   }
+          // } catch (error) {
+          //   console.error('Failed to fetch user details:', error);
+          //   // If we can't get user details, sign out
+          //   await signOut();
+          // }
         } else {
           // No session, make sure we're signed out
-          Storage.flush();
+          Storage.setUserDetails(null);
+
           dispatch({
             type: AuthContextActionType.IS_AUTHENTICATED,
             payload: false,
@@ -243,7 +297,8 @@ const AuthContextProvider = ({ children }: { children: React.ReactNode }) => {
         }
       } catch (error) {
         console.error('Auth check error:', error);
-        Storage.flush();
+        Storage.setUserDetails(null);
+
         dispatch({
           type: AuthContextActionType.IS_AUTHENTICATED,
           payload: false,
@@ -262,32 +317,35 @@ const AuthContextProvider = ({ children }: { children: React.ReactNode }) => {
         console.log('Auth state changed:', event);
 
         if (event === 'SIGNED_IN' && session) {
-          Storage.setAuthToken(session.access_token);
-          Storage.setAuthenticated(true);
+          dispatch({
+            type: AuthContextActionType.IS_AUTHENTICATED,
+            payload: true,
+          });
 
-          try {
-            const response = await apolloClient.query({
-              query: QUERY_GET_ME,
-              context: {
-                headers: {
-                  Authorization: `Bearer ${session.access_token}`,
-                },
-              },
-            });
+          // try {
+          //   const response = await apolloClient.query({
+          //     query: QUERY_GET_ME,
+          //     context: {
+          //       headers: {
+          //         Authorization: `Bearer ${session.access_token}`,
+          //       },
+          //     },
+          //   });
 
-            const userDetails = response.data.me;
-            const _userDetails = formatUserDetails(userDetails);
-            setUserDetails(_userDetails);
-
-            dispatch({
-              type: AuthContextActionType.IS_AUTHENTICATED,
-              payload: true,
-            });
-          } catch (error) {
-            console.error('Failed to fetch user details:', error);
-          }
+          //   if (response?.data?.me) {
+          //     const userDetails = response.data.me;
+          //     const _userDetails = formatUserDetails(userDetails);
+          //     if (_userDetails) {
+          //       setUserDetails(_userDetails);
+          //     }
+          //   }
+          // } catch (error) {
+          //   console.error('Failed to fetch user details:', error);
+          //   // Don't update auth state if we can't get user details
+          // }
         } else if (event === 'SIGNED_OUT') {
-          Storage.flush();
+          Storage.setUserDetails(null);
+
           dispatch({
             type: AuthContextActionType.SIGN_OUT,
           });
@@ -301,16 +359,18 @@ const AuthContextProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, []);
 
-  const initialContext: any = useCallback(
+  // Use useMemo instead of useCallback to prevent infinite renders
+  const contextValue = React.useMemo(
     () => ({
       ...authState,
       signIn,
       signUp,
       signOut,
       getUserDetails,
+      setUserDetails,
       loading,
     }),
-    [authState, getUserDetails, loading],
+    [authState, loading],
   );
 
   //case is for user who needs a re-sign in (legacy)
@@ -319,9 +379,7 @@ const AuthContextProvider = ({ children }: { children: React.ReactNode }) => {
   }
 
   return (
-    <AuthContext.Provider value={initialContext()}>
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
   );
 };
 

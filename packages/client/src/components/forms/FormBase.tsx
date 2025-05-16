@@ -133,7 +133,7 @@ const FormBase = ({
         <ErrorDisplay errorMessage={formSubmitErrorMessage} />
       )}
       <form onSubmit={form.onSubmit(onFormSubmit)}>
-        <LoadingOverlay visible={fetching || submitting} />
+        {/* <LoadingOverlay visible={fetching || submitting} /> */}
         {children(form)}
       </form>
       {debug && <Debug values={form.values} />}

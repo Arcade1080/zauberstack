@@ -56,11 +56,7 @@ export class MediaController {
     @CurrentUser() user: User,
     @Body('collection') collection?: string,
   ) {
-    const createdMedia = await this.mediaService.createMedia(
-      file,
-      user.id,
-      collection,
-    );
+    const createdMedia = await this.mediaService.create(file, user.id);
     return createdMedia;
   }
 
@@ -76,7 +72,7 @@ export class MediaController {
   @Delete(':id')
   @RequiredPermissions(Permission.Delete_Media)
   async deleteMedia(@Param('id') id: string, @CurrentUser() user: any) {
-    await this.mediaService.deleteMedia(id, user.id);
+    await this.mediaService.delete(id);
     return { success: true };
   }
 }

@@ -11,6 +11,7 @@ import { setContext } from '@apollo/client/link/context';
 import { onError } from '@apollo/client/link/error';
 import Storage from '../services/Storage';
 import { refreshAccessToken } from './refreshAccessToken';
+import supabase from './supabaseClient';
 
 const { VITE_API_URL } = import.meta.env;
 
@@ -89,8 +90,11 @@ const refreshTokenLink = onError(
   },
 );
 
-const authLink = setContext((_, { headers }) => {
-  const authToken = Storage.getAuthToken();
+const authLink = setContext(async (_, { headers }) => {
+  // Get the token from Supabase session
+  const { data } = await supabase.auth.getSession();
+  const authToken = data?.session?.access_token || null;
+
   return {
     headers: {
       ...headers,

@@ -8,9 +8,10 @@ import { AccountResolver } from './account.resolver';
 import { AccountService } from './account.service';
 import { AuthModule } from '../auth/auth.module';
 import { UserService } from '../user/user.service';
+import { SupabaseModule } from '../supabase/supabase.module';
 
 @Module({
-  imports: [AuthModule, MailModule, StripeModule, MediaModule],
+  imports: [AuthModule, MailModule, StripeModule, MediaModule, SupabaseModule],
   providers: [
     AccountService,
     UserService,

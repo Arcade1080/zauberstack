@@ -18,10 +18,12 @@ import { GqlAuthGuard } from './guards/gql-auth.guard';
 import { PermissionGuard } from './guards/permission.guard';
 import { JwtStrategy } from './jwt.strategy';
 import { PasswordService } from './password.service';
+import { SupabaseJwtStrategy } from './supabase-jwt.strategy';
+import { SupabaseAuthGuard } from './guards/supabase-auth.guard';
 
 @Module({
   imports: [
-    PassportModule.register({ defaultStrategy: 'jwt' }),
+    PassportModule.register({ defaultStrategy: 'supabase-jwt' }),
     JwtModule.registerAsync({
       useFactory: async (configService: ConfigService) => {
         const securityConfig = configService.get<SecurityConfig>('security');
@@ -41,7 +43,9 @@ import { PasswordService } from './password.service';
     UserService,
     AuthResolver,
     JwtStrategy,
+    SupabaseJwtStrategy,
     GqlAuthGuard,
+    SupabaseAuthGuard,
     MailService,
     AccountService,
     MediaService,
@@ -59,6 +63,7 @@ import { PasswordService } from './password.service';
   ],
   exports: [
     GqlAuthGuard,
+    SupabaseAuthGuard,
     AuthService,
     JwtModule,
     PasswordService,

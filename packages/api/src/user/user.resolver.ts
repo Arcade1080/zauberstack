@@ -48,8 +48,14 @@ export class UserResolver {
   ) {}
 
   @Query(() => User)
-  me(@CurrentUser() user: User) {
-    return user;
+  async me(@CurrentUser() user: User) {
+    const user_data = await this.prismaService.user.findUnique({
+      where: { id: user.id },
+      // include: {
+      //   account: { include: { subscriptions: true } },
+      // },
+    });
+    return user_data;
   }
 
   @Mutation(() => User)

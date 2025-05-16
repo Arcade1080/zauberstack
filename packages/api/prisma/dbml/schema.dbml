@@ -9,6 +9,7 @@ Table User {
   deletedAt DateTime
   email String [unique, not null]
   password String [not null]
+  supabaseId String [unique]
   firstname String
   lastname String
   avatar Media

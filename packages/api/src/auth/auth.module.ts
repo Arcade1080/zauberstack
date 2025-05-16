@@ -8,6 +8,7 @@ import { SecurityConfig } from '../config/config.interface';
 import { MailService } from '../mail/mail.service';
 import { MediaService } from '../media/media.service';
 import { OrganizationService } from '../organization/organization.service';
+import { SupabaseModule } from '../supabase/supabase.module';
 import { UserService } from '../user/user.service';
 import { GoogleAuthController } from './auth.controller';
 import { AuthResolver } from './auth.resolver';
@@ -33,6 +34,7 @@ import { PasswordService } from './password.service';
       },
       inject: [ConfigService],
     }),
+    SupabaseModule,
   ],
   providers: [
     AuthService,

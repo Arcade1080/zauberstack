@@ -1,8 +1,9 @@
-
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  // The Supabase database URL will be in the format:
+  // postgresql://postgres:[PASSWORD]@[HOST]:[PORT]/postgres
+  // You'll get this from Supabase dashboard > Project Settings > Database
 }
 
 generator client {
@@ -20,6 +21,7 @@ model User {
   deletedAt DateTime? 
   email     String  @unique 
   password  String
+  supabaseId String?  @unique
   firstname String?
   lastname  String?
   avatar    Media?   @relation("UserAvatar")

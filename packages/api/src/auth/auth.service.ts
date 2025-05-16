@@ -11,6 +11,8 @@ import { PasswordService } from './password.service';
 import { MailService } from '../mail/mail.service';
 import { Role } from './enums/role';
 import { AccountService } from '../account/account.service';
+import { SupabaseAuthService } from '../supabase/supabase-auth.service';
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -20,6 +22,7 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly accountService: AccountService,
     private readonly mailService: MailService,
+    private readonly supabaseAuthService: SupabaseAuthService,
   ) {}
 
   validateUserByEmail(email: string): Promise<User> {
@@ -113,27 +116,49 @@ export class AuthService {
   }
 
   async signIn(email: string, password: string): Promise<any> {
-    const user = await this.prismaService.user.findFirst({ where: { email } });
+    try {
+      // Use Supabase for authentication
+      const { supabaseSession, user } = await this.supabaseAuthService.signIn(
+        email,
+        password,
+      );
 
-    if (!user) {
-      throw new InvalidCredentialsError();
+      if (!user) {
+        throw new InvalidCredentialsError();
+      }
+
+      return {
+        tokens: this.generateTokens({
+          userId: user.id,
+        }),
+        user,
+      };
+    } catch (error) {
+      // Fall back to local auth if Supabase auth fails
+      const user = await this.prismaService.user.findFirst({
+        where: { email },
+      });
+
+      if (!user) {
+        throw new InvalidCredentialsError();
+      }
+
+      const passwordValid = await this.passwordService.validatePassword(
+        password,
+        user.password,
+      );
+
+      if (!passwordValid) {
+        throw new InvalidCredentialsError();
+      }
+
+      return {
+        tokens: this.generateTokens({
+          userId: user.id,
+        }),
+        user,
+      };
     }
-
-    const passwordValid = await this.passwordService.validatePassword(
-      password,
-      user.password,
-    );
-
-    if (!passwordValid) {
-      throw new InvalidCredentialsError();
-    }
-
-    return {
-      tokens: this.generateTokens({
-        userId: user.id,
-      }),
-      user,
-    };
   }
 
   validateUser(userId: string): Promise<User> {

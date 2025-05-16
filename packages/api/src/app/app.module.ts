@@ -11,6 +11,7 @@ import config from '../config/config';
 import { MailModule } from '../mail/mail.module';
 import { MediaModule } from '../media/media.module';
 import { StripeModule } from '../stripe/stripe.module';
+import { SupabaseModule } from '../supabase/supabase.module';
 import { TagModule } from '../tag/tag.module';
 import { TaskModule } from '../task/task.module';
 import { UserModule } from '../user/user.module';
@@ -54,6 +55,7 @@ import { AccountModule } from './../account/account.module';
     PrismaModule.forRoot({
       isGlobal: true,
     }),
+    SupabaseModule,
     TagModule,
     UserModule,
     AuthModule,

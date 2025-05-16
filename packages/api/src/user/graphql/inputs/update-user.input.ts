@@ -8,4 +8,6 @@ export class UpdateUserInput {
   lastname?: string;
   @Field({ nullable: true })
   avatarId?: string;
+  @Field({ nullable: true })
+  avatarUrl?: string;
 }

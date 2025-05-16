@@ -52,7 +52,12 @@ export class UserService {
     newUserData: UpdateUserInput,
   ): Promise<User> {
     let avatar: any;
+    const updateData: any = {
+      firstname: newUserData.firstname,
+      lastname: newUserData.lastname,
+    };
 
+    // Handle avatar based on avatarId (traditional Media relation approach)
     if (
       newUserData.avatarId === null ||
       typeof newUserData.avatarId === 'undefined'
@@ -68,6 +73,7 @@ export class UserService {
       };
     }
 
+    // Delete the old Media entry if we're removing the avatar
     if (newUserData.avatarId === null) {
       // get avatar id from user
       const user = await this.prisma.user.findUnique({
@@ -87,12 +93,44 @@ export class UserService {
       }
     }
 
+    // Set avatar relation if using traditional Media relation
+    if (avatar) {
+      updateData.avatar = avatar;
+    }
+
+    // Handle direct avatar URL from Supabase Storage
+    if (newUserData.avatarUrl !== undefined) {
+      // Create or update Media record for the avatar URL
+      const avatarMedia = await this.prisma.media.upsert({
+        where: {
+          // Use a consistent ID format based on user ID for avatar URLs
+          id: `avatar_${userId}`,
+        },
+        create: {
+          id: `avatar_${userId}`,
+          url: newUserData.avatarUrl,
+          filename: 'avatar',
+          originalFilename: 'avatar',
+          mimeType: 'image/jpeg', // Default, could be determined from URL
+          collection: 'avatars',
+          userId: userId,
+        },
+        update: {
+          url: newUserData.avatarUrl,
+          updatedAt: new Date(),
+        },
+      });
+
+      // Connect the user to this media as their avatar
+      updateData.avatar = {
+        connect: {
+          id: avatarMedia.id,
+        },
+      };
+    }
+
     return this.prisma.user.update({
-      data: {
-        firstname: newUserData.firstname,
-        lastname: newUserData.lastname,
-        avatar,
-      },
+      data: updateData,
       where: {
         id: userId,
       },

@@ -282,4 +282,10 @@ export class UserResolver {
       .account({ select: { subscriptions: true } });
     return plan?.subscriptions[0]?.stripeProductName || null;
   }
+
+  @Mutation(() => Boolean)
+  async signOut() {
+    // For Supabase, sign out is handled on the client. This mutation is a placeholder for future server-side cleanup if needed.
+    return true;
+  }
 }

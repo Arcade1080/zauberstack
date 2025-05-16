@@ -118,6 +118,7 @@ type Mutation {
   sendResetPasswordLink(data: ForgotPasswordInput!): String!
   signIn(data: SignInInput!): Auth!
   signInWithMagicLink(data: SignInWithMagicLinkInput!): Auth!
+  signOut: Boolean!
   signUp(data: SignUpDto!): Auth!
   toggleTaskStatus(taskId: String!): Task!
   updateTag(id: String!, name: String!): Tag!

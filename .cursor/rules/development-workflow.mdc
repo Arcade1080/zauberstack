@@ -1,0 +1,128 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Development Workflow
+
+This document outlines the development workflow for Zauberstack.
+
+## Prerequisites
+
+Ensure you have the following tools installed:
+
+- Node.js (LTS version recommended)
+- Yarn (v3.x)
+- Docker and Docker Compose (for database and service integration)
+- Git
+
+## Initial Setup
+
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd zauberstack
+   ```
+
+2. Install dependencies:
+   ```bash
+   yarn install
+   ```
+
+3. Set up environment files:
+   Copy the example environment files for each package and customize as needed:
+   ```bash
+   cp packages/api/env-example-improved.txt packages/api/.env
+   cp packages/client/env.example.txt packages/client/.env
+   ```
+
+4. Initialize the database (requires Docker):
+   ```bash
+   yarn init-db
+   ```
+
+## Development Server
+
+Start the complete development environment:
+
+```bash
+yarn start
+```
+
+This will concurrently run:
+- API server (NestJS) on port 4000
+- Client app (React) on port 5173
+- Website on port 3000
+
+Alternatively, run individual services:
+- API only: `yarn api`
+- Client only: `yarn client`
+- Website only: `yarn website`
+
+## Code Quality Tools
+
+### Linting
+
+Run linting on specific packages:
+```bash
+yarn lint-api
+yarn lint-client
+yarn lint-website
+```
+
+### Formatting
+
+Format code with Prettier:
+```bash
+yarn prettier-api
+yarn prettier-client
+```
+
+## Database Management
+
+The API package uses Prisma for database ORM. Key commands:
+
+- Run migrations: `yarn workspace api migrate:dev`
+- Reset database: `yarn workspace api migrate:reset`
+- Generate Prisma client: `yarn workspace api prisma generate`
+- Seed database: `yarn workspace api seed`
+
+## Testing
+
+- Run API E2E tests: `yarn e2e-test-api`
+- Run API unit tests: `yarn workspace api test`
+- Run Client tests: `yarn workspace client test`
+
+## Environment Variables
+
+Important environment variables are documented in:
+- [packages/api/ENV_DOCUMENTATION.md](mdc:packages/api/ENV_DOCUMENTATION.md)
+- [packages/api/SUPABASE_SETUP.md](mdc:packages/api/SUPABASE_SETUP.md)
+
+## Containerization
+
+Build Docker images:
+```bash
+# API container
+docker build -f packages/api/Dockerfile.api -t zauberstack-api .
+
+# Client container
+docker build -f packages/client/Dockerfile.client -t zauberstack-client .
+```
+
+## Common Development Tasks
+
+1. **Creating a new feature**:
+   - Create a feature branch: `git checkout -b feature/feature-name`
+   - Implement changes
+   - Test changes
+   - Submit a pull request
+
+2. **Updating dependencies**:
+   - Run `yarn upgrade-interactive` to update dependencies interactively
+   - Test thoroughly after dependency updates
+
+3. **Troubleshooting**:
+   - Check logs in the terminal where services are running
+   - Reset dependencies: `yarn reinstall`
+   - Reset database: `yarn workspace api migrate:reset`

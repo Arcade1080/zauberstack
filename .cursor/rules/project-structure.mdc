@@ -1,0 +1,85 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Project Structure
+
+Zauberstack is a monorepo organized using Yarn workspaces. The project is structured into multiple packages, each with a specific responsibility.
+
+## Package Organization
+
+- `packages/api/`: NestJS backend with GraphQL API
+- `packages/client/`: React frontend application
+- `packages/website/`: Website for the project (landing pages, marketing)
+
+## Root Configuration
+
+The project contains several root-level configuration files:
+
+- [package.json](mdc:package.json): Project metadata, scripts, and workspace configuration
+- [.env](mdc:.env): Environment variables (gitignored)
+- [.gitignore](mdc:.gitignore): Git ignore patterns
+- [.prettierrc](mdc:.prettierrc): Prettier configuration for code formatting
+- [.eslintrc.js](mdc:.eslintrc.js): ESLint configuration for linting
+
+## Key Scripts
+
+The root `package.json` provides several scripts to manage the project:
+
+```json
+"scripts": {
+  "client": "yarn workspace client dev",
+  "api": "yarn workspace api start:dev",
+  "website": "yarn workspace website dev",
+  "init-db": "yarn workspace api migrate:dev && yarn workspace api seed",
+  "start": "concurrently --kill-others-on-fail \"yarn api\" \"yarn client\" \"yarn website\"",
+  "lint-client": "yarn workspace client lint",
+  "lint-api": "yarn workspace api lint",
+  "lint-website": "yarn workspace website lint",
+  "prettier-api": "yarn workspace api format",
+  "prettier-client": "yarn workspace client format",
+  "e2e-test-api": "yarn workspace api test:e2e",
+  "clean": "rimraf packages/*/node_modules && rimraf node_modules",
+  "reinstall": "yarn clean && yarn install",
+  "email:dev": "yarn workspace api email dev -p 3001 --dir src/mail/email_templates"
+}
+```
+
+## Dependency Management
+
+Dependencies are managed at two levels:
+
+1. **Root Dependencies**: Tools and utilities used across the project
+2. **Package Dependencies**: Specific to each package
+
+The root `package.json` also includes `resolutions` to enforce consistent versions of shared libraries.
+
+## Development Workflow
+
+1. Install dependencies: `yarn install`
+2. Initialize database: `yarn init-db`
+3. Start all services: `yarn start`
+
+Alternatively, you can start individual services:
+- API: `yarn api`
+- Client: `yarn client`
+- Website: `yarn website`
+
+## Environment Setup
+
+Each package has its own environment configuration:
+
+- `packages/api/.env`: Backend environment variables
+- `packages/client/.env`: Frontend environment variables
+- `packages/website/.env`: Website environment variables
+
+Sample env files are provided (e.g., `env.example.txt`) as templates.
+
+## Docker Support
+
+The project includes Docker configuration for containerized deployment:
+
+- `packages/api/Dockerfile.api`: API container configuration
+- `packages/client/Dockerfile.client`: Client container configuration
+- `docker-compose.yml`: Compose configuration for local development

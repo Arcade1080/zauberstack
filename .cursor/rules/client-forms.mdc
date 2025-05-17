@@ -1,0 +1,201 @@
+---
+description: Useful for client side functionality
+globs: 
+alwaysApply: false
+---
+# Form Handling
+
+The client application uses a consistent approach for form handling based on Mantine's form library and custom components.
+
+## Form Base Component
+
+The application uses a reusable `FormBase` component that handles common form operations:
+[packages/client/src/components/forms/FormBase.tsx](mdc:packages/client/src/components/forms/FormBase.tsx)
+
+This component provides:
+- Data loading for edit forms
+- Form validation
+- Error handling
+- Submission handling
+- Loading states
+
+## Basic Form Pattern
+
+Forms follow this pattern:
+
+```tsx
+import { useForm } from '@mantine/form';
+import { TextInput, Button, Stack } from '@mantine/core';
+
+const MyForm = ({ onSubmit }) => {
+  const form = useForm({
+    initialValues: {
+      name: '',
+      email: '',
+    },
+    validate: {
+      name: (value) => (value.length < 2 ? 'Name is too short' : null),
+      email: (value) => (/^\S+@\S+$/.test(value) ? null : 'Invalid email'),
+    },
+  });
+  
+  return (
+    <form onSubmit={form.onSubmit(onSubmit)}>
+      <Stack>
+        <TextInput 
+          label="Name" 
+          placeholder="Your name" 
+          {...form.getInputProps('name')} 
+        />
+        <TextInput 
+          label="Email" 
+          placeholder="Your email" 
+          {...form.getInputProps('email')} 
+        />
+        <Button type="submit">Submit</Button>
+      </Stack>
+    </form>
+  );
+};
+```
+
+## Complex Form Pattern with FormBase
+
+For complex forms, especially those connected to GraphQL, use the FormBase component:
+
+```tsx
+import FormBase, { FORM_MODE } from '../../components/forms/FormBase';
+import { QUERY_GET_TASK } from '../../api/queries';
+import { useUpdateTaskMutation } from '../../hooks/useUpdateTask';
+
+const TaskForm = ({ taskId, onSuccess }) => {
+  return (
+    <FormBase
+      loader={QUERY_GET_TASK}
+      queryVariables={{ taskId }}
+      formatInitialValues={(data) => {
+        const { title, description, tags } = data.task;
+        return { title, description, tags: tags.map(t => t.id) };
+      }}
+      formatPreSubmit={(data) => {
+        return { 
+          taskId,
+          ...data 
+        };
+      }}
+      onSubmit={onSuccess}
+      submitAction={useUpdateTaskMutation}
+      mode={FORM_MODE.EDIT}
+      validationSchema={Yup.object().shape({
+        title: Yup.string().required('Title is required'),
+        description: Yup.string(),
+      })}
+    >
+      {(form) => (
+        <Stack>
+          <TextInput
+            label="Title"
+            placeholder="Task title"
+            {...form.getInputProps('title')}
+          />
+          <Textarea
+            label="Description"
+            placeholder="Task description"
+            {...form.getInputProps('description')}
+          />
+          <Button type="submit" loading={form.isSubmitting}>
+            Save
+          </Button>
+        </Stack>
+      )}
+    </FormBase>
+  );
+};
+```
+
+## Form Validation
+
+Forms use Yup for validation schemas:
+
+```typescript
+import * as Yup from 'yup';
+
+const validationSchema = Yup.object().shape({
+  email: Yup.string()
+    .email('Invalid email')
+    .required('Email is required'),
+  password: Yup.string()
+    .min(8, 'Password must be at least 8 characters')
+    .required('Password is required'),
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref('password')], 'Passwords must match')
+    .required('Please confirm your password'),
+});
+```
+
+## Form Submission and API Integration
+
+Forms connect to the API through custom hooks:
+
+```typescript
+// hook definition
+export const useUpdateProfileMutation = () => {
+  const [mutate, { loading }] = useMutation(MUTATION_UPDATE_PROFILE, {
+    refetchQueries: [{ query: QUERY_GET_ME }],
+  });
+  
+  const updateProfile = async (data) => {
+    return mutate({ variables: { data } });
+  };
+  
+  return [updateProfile, { loading }];
+};
+
+// usage with FormBase
+<FormBase
+  submitAction={useUpdateProfileMutation}
+  // other props
+>
+  {/* form fields */}
+</FormBase>
+```
+
+## Form States and Feedback
+
+Forms display different states:
+- Loading state during submission
+- Error messages for validation errors
+- Success notifications on successful submission
+- Disabled inputs during submission
+
+## File Upload Forms
+
+For forms with file uploads, use the file input component and handle the upload separately:
+
+```tsx
+const ProfileForm = () => {
+  const [file, setFile] = useState(null);
+  
+  const handleSubmit = async (values) => {
+    if (file) {
+      // Handle file upload first
+      const fileUrl = await uploadFile(file);
+      // Then submit form with file URL
+      await updateProfile({ ...values, avatarUrl: fileUrl });
+    } else {
+      await updateProfile(values);
+    }
+  };
+  
+  return (
+    <form onSubmit={handleSubmit}>
+      <FileInput 
+        label="Profile Picture"
+        onChange={setFile}
+        accept="image/*"
+      />
+      {/* Other form fields */}
+    </form>
+  );
+};
+```

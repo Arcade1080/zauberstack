@@ -1,0 +1,137 @@
+---
+description: Useful for client side functionality
+globs: 
+alwaysApply: false
+---
+# Component Patterns
+
+The client application uses a consistent component pattern throughout the codebase.
+
+## Component Structure
+
+Components follow this general structure:
+
+```tsx
+import React from 'react';
+import { ComponentName } from './ComponentName';
+
+// Define prop types with TypeScript interfaces
+interface ComponentProps {
+  prop1: string;
+  prop2?: number; // Optional prop
+  onAction: (value: string) => void;
+}
+
+// Use functional components with arrow functions
+const ComponentName: React.FC<ComponentProps> = ({ 
+  prop1, 
+  prop2 = 0, // Default value for optional prop
+  onAction 
+}) => {
+  // Component logic using hooks
+  const [state, setState] = React.useState(initialState);
+  
+  // Event handlers
+  const handleChange = (event) => {
+    setState(event.target.value);
+    onAction(event.target.value);
+  };
+  
+  // Render JSX
+  return (
+    <div>
+      {/* Component markup */}
+    </div>
+  );
+};
+
+export default ComponentName;
+```
+
+## Component Organization
+
+- **Atomic Design Principles**: Components are organized following atomic design principles
+- **Complex Components**: More complex components may be split into multiple files in a directory
+- **Export Pattern**: Components are typically exported from an index.ts file in their directory
+
+## Mantine UI Integration
+
+Components use Mantine UI for styling and basic UI elements:
+
+```tsx
+import { Button, TextInput, Stack } from '@mantine/core';
+
+const FormComponent = ({ onSubmit }) => {
+  return (
+    <Stack>
+      <TextInput label="Name" placeholder="Enter your name" />
+      <Button onClick={onSubmit}>Submit</Button>
+    </Stack>
+  );
+};
+```
+
+## Form Components
+
+Form components use Mantine Form hook for validation and state management:
+
+```tsx
+import { useForm } from '@mantine/form';
+
+const MyForm = () => {
+  const form = useForm({
+    initialValues: {
+      email: '',
+      password: '',
+    },
+    validate: {
+      email: (value) => (/^\S+@\S+$/.test(value) ? null : 'Invalid email'),
+      password: (value) => (value.length < 8 ? 'Password too short' : null),
+    },
+  });
+
+  return (
+    <form onSubmit={form.onSubmit(values => console.log(values))}>
+      <TextInput {...form.getInputProps('email')} />
+      <PasswordInput {...form.getInputProps('password')} />
+      <Button type="submit">Submit</Button>
+    </form>
+  );
+};
+```
+
+## Protected Components
+
+Components that require authentication are wrapped in auth check components or guards:
+
+```tsx
+const ProtectedComponent = () => {
+  const { isAuthenticated } = useAuthContext();
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" />;
+  }
+  
+  return <div>Protected Content</div>;
+};
+```
+
+## Lazy Loading
+
+Large components or page components often use lazy loading:
+
+```tsx
+const LazyComponent = React.lazy(() => import('./HeavyComponent'));
+
+const App = () => (
+  <React.Suspense fallback={<Loading />}>
+    <LazyComponent />
+  </React.Suspense>
+);
+```
+
+## Important Component Examples
+
+- Page layout: [packages/client/src/components/layout/PageLayout.tsx](mdc:packages/client/src/components/layout/PageLayout.tsx)
+- Form base: [packages/client/src/components/forms/FormBase.tsx](mdc:packages/client/src/components/forms/FormBase.tsx)
+- User components: [packages/client/src/components/user/UserDisplay.tsx](mdc:packages/client/src/components/user/UserDisplay.tsx)

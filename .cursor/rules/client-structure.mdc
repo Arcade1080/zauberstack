@@ -1,0 +1,59 @@
+---
+description: Useful for client side functionality
+globs: 
+alwaysApply: false
+---
+# Client Application Structure
+
+The client package is a React application built with Vite, TypeScript, and Mantine UI library.
+
+## Entry Points
+
+The main entry point is [packages/client/src/main.tsx](mdc:packages/client/src/main.tsx), which renders the React application.
+The root component is [packages/client/src/App.tsx](mdc:packages/client/src/App.tsx).
+
+## Directory Structure
+
+The client follows a feature-based and component-based structure:
+
+- `src/`: Contains all source code
+  - `api/`: API client configuration and GraphQL queries/mutations
+    - `queries.ts`: GraphQL queries
+    - `mutations.ts`: GraphQL mutations
+  - `components/`: Reusable UI components
+    - `common/`: Generic components used throughout the app
+    - `forms/`: Form components and form-related utilities
+    - `layout/`: Layout components like headers, sidebars, etc.
+  - `context/`: React context providers for global state
+  - `hooks/`: Custom React hooks
+  - `lib/`: Utility libraries and configurations
+  - `pages/`: Page components organized by route
+    - `protected/`: Pages that require authentication
+    - `public/`: Pages that don't require authentication
+  - `router/`: Routing configuration
+  - `services/`: Service layer for external API communication
+  - `utils/`: Utility functions and helpers
+
+## Styling
+
+- Uses Mantine UI component library
+- Styling is done through Mantine's styling API and CSS modules
+
+## State Management
+
+- Uses React Context API for global state
+- Uses Apollo Client for GraphQL state
+- Uses local component state with useState for component-specific state
+
+## Authentication
+
+Authentication is handled through Supabase, with implementation in the auth context.
+See [packages/client/SUPABASE_AUTH.md](mdc:packages/client/SUPABASE_AUTH.md) for details.
+
+## Important Code Conventions
+
+1. Use functional components with hooks
+2. Place business logic in custom hooks
+3. Use TypeScript for type safety
+4. Follow the component structure described above
+5. Use Apollo Client for GraphQL operations

@@ -1,0 +1,99 @@
+---
+description: Useful for server side functionality
+globs: 
+alwaysApply: false
+---
+# GraphQL Implementation
+
+The API uses NestJS GraphQL module with a code-first approach.
+
+## Core Structure
+
+- **Resolvers**: Define the GraphQL endpoints
+- **Models**: Define the GraphQL object types
+- **Inputs**: Define the GraphQL input types
+- **Args**: Define individual argument decorators
+
+## Resolver Pattern
+
+Resolvers follow this pattern:
+
+```typescript
+@Resolver(() => EntityName)
+export class EntityResolver {
+  constructor(
+    private entityService: EntityService,
+    private prismaService: PrismaService
+  ) {}
+
+  @Query(() => EntityName)
+  async getEntity(@Args('id') id: string) {
+    return this.entityService.getEntity(id);
+  }
+
+  @Mutation(() => EntityName)
+  async createEntity(@Args('data') data: CreateEntityInput) {
+    return this.entityService.createEntity(data);
+  }
+
+  @ResolveField('fieldName')
+  async fieldName(@Parent() entity: EntityName) {
+    // Resolve a field that requires additional logic
+    return this.entityService.getFieldNameData(entity.id);
+  }
+}
+```
+
+## Models Pattern
+
+GraphQL models are defined using NestJS decorators:
+
+```typescript
+@ObjectType()
+export class User extends BaseModel {
+  @Field(() => String)
+  email: string;
+  
+  @Field(() => String, { nullable: true })
+  firstname?: string;
+  
+  @Field(() => Role)
+  role: Role;
+  
+  @HideField() // Don't expose this in GraphQL
+  password: string;
+}
+```
+
+## Input Types Pattern
+
+Input types are used for mutations:
+
+```typescript
+@InputType()
+export class CreateUserInput {
+  @Field()
+  @IsEmail()
+  email: string;
+  
+  @Field()
+  @MinLength(8)
+  password: string;
+  
+  @Field(() => [String], { nullable: true })
+  roles?: string[];
+}
+```
+
+## Authentication & Authorization
+
+- Use `@CurrentUser()` decorator to get the authenticated user
+- Use `@RequiredPermissions()` decorator for authorization checks
+- Wrap sensitive operations in permission checks
+
+## Important Files
+
+- GraphQL module configuration: [packages/api/src/app.module.ts](mdc:packages/api/src/app.module.ts)
+- Example resolver: [packages/api/src/user/user.resolver.ts](mdc:packages/api/src/user/user.resolver.ts)
+- Example model: [packages/api/src/user/graphql/models/user.model.ts](mdc:packages/api/src/user/graphql/models/user.model.ts)
+- Example input: [packages/api/src/user/graphql/inputs/update-user.input.ts](mdc:packages/api/src/user/graphql/inputs/update-user.input.ts)

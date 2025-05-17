@@ -1,0 +1,145 @@
+---
+description: Useful for client side functionality
+globs: 
+alwaysApply: false
+---
+# GraphQL Usage in Client
+
+The client application uses Apollo Client to communicate with the GraphQL API.
+
+## Apollo Client Setup
+
+Apollo Client is configured in [packages/client/src/lib/apolloClient.ts](mdc:packages/client/src/lib/apolloClient.ts) and provided to the application via the Apollo Provider in the root component.
+
+## Query and Mutation Organization
+
+GraphQL queries and mutations are organized in dedicated files:
+
+- Queries: [packages/client/src/api/queries.ts](mdc:packages/client/src/api/queries.ts)
+- Mutations: [packages/client/src/api/mutations.ts](mdc:packages/client/src/api/mutations.ts)
+
+## Query Definition Pattern
+
+Queries are defined using the `gql` tag from Apollo Client:
+
+```typescript
+import { gql } from '@apollo/client';
+
+export const QUERY_GET_ME = gql`
+  query getMe {
+    me {
+      id
+      firstname
+      lastname
+      email
+      avatar
+      role {
+        name
+        permissions {
+          name
+        }
+      }
+    }
+  }
+`;
+```
+
+## Using Queries in Components
+
+Queries are used in components with the `useQuery` hook:
+
+```tsx
+import { useQuery } from '@apollo/client';
+import { QUERY_GET_ME } from '../api/queries';
+
+const ProfileComponent = () => {
+  const { loading, error, data } = useQuery(QUERY_GET_ME);
+
+  if (loading) return <Loading />;
+  if (error) return <Error message={error.message} />;
+
+  const { me } = data;
+  
+  return (
+    <div>
+      <h1>{me.firstname} {me.lastname}</h1>
+      <p>{me.email}</p>
+    </div>
+  );
+};
+```
+
+## Using Mutations in Components
+
+Mutations are used with the `useMutation` hook:
+
+```tsx
+import { useMutation } from '@apollo/client';
+import { MUTATION_UPDATE_PROFILE } from '../api/mutations';
+
+const ProfileEditor = () => {
+  const [updateProfile, { loading }] = useMutation(MUTATION_UPDATE_PROFILE);
+
+  const handleSubmit = (values) => {
+    updateProfile({ 
+      variables: { data: values },
+      onCompleted: (data) => {
+        showNotification({ title: 'Profile updated!' });
+      },
+      onError: (error) => {
+        showError({ title: 'Failed to update profile', error });
+      }
+    });
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      {/* Form fields */}
+      <Button type="submit" loading={loading}>Save</Button>
+    </form>
+  );
+};
+```
+
+## Custom Hooks for GraphQL Operations
+
+Complex GraphQL operations are often encapsulated in custom hooks:
+
+```typescript
+// In hooks/useUpdateProfile.ts
+export const useUpdateProfile = () => {
+  const [updateProfile, { loading, error }] = useMutation(MUTATION_UPDATE_PROFILE, {
+    refetchQueries: [{ query: QUERY_GET_ME }],
+  });
+
+  const handleUpdateProfile = async (data) => {
+    try {
+      const result = await updateProfile({ variables: { data } });
+      return result.data.updateProfile;
+    } catch (err) {
+      console.error('Error updating profile:', err);
+      throw err;
+    }
+  };
+
+  return { handleUpdateProfile, loading, error };
+};
+
+// In component
+const ProfileForm = () => {
+  const { handleUpdateProfile, loading } = useUpdateProfile();
+  
+  // Use the hook in your component
+};
+```
+
+## Apollo Client Cache
+
+The Apollo Client cache is configured to store query results and update automatically after mutations.
+
+Important patterns:
+
+1. Use cache normalization with `id` fields
+2. Include `refetchQueries` for mutations to refresh data
+3. Use optimistic UI updates for better user experience
+4. Use cache updates for complex scenarios

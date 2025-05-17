@@ -1,0 +1,145 @@
+---
+description: Useful for client side functionality
+globs: 
+alwaysApply: false
+---
+# Authentication in Client
+
+The client application uses Supabase for authentication. The authentication flow is documented in [packages/client/SUPABASE_AUTH.md](mdc:packages/client/SUPABASE_AUTH.md).
+
+## Authentication Context
+
+Authentication state is managed through the Auth Context:
+[packages/client/src/context/AuthContextProvider.tsx](mdc:packages/client/src/context/AuthContextProvider.tsx)
+
+This context provides:
+- Current user state
+- Login/logout functions
+- Auth status (loading, authenticated, error)
+- User role and permissions
+
+## Using Authentication in Components
+
+Components can access the authentication state using the `useAuthContext` hook:
+
+```tsx
+import { useAuthContext } from '../context/AuthContextProvider';
+
+const ProfilePage = () => {
+  const { user, isAuthenticated, isLoading } = useAuthContext();
+  
+  if (isLoading) return <Loading />;
+  if (!isAuthenticated) return <Navigate to="/login" />;
+  
+  return (
+    <div>
+      <h1>Welcome, {user.firstname}!</h1>
+      {/* Rest of profile page */}
+    </div>
+  );
+};
+```
+
+## Protected Routes
+
+Protected routes are implemented using route guards:
+
+```tsx
+// In router/index.tsx
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <RootLayout />,
+    children: [
+      {
+        path: 'dashboard',
+        element: (
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'login',
+        element: <LoginPage />,
+      },
+    ],
+  },
+]);
+
+// ProtectedRoute component
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated, isLoading } = useAuthContext();
+  
+  if (isLoading) return <Loading />;
+  if (!isAuthenticated) return <Navigate to="/login" />;
+  
+  return children;
+};
+```
+
+## Authentication Flow
+
+1. User enters credentials in login form
+2. Credentials are sent to Supabase Auth
+3. On successful authentication, Supabase returns a JWT token
+4. Token is stored and used for subsequent API requests
+5. Auth context is updated with user data
+6. Protected routes become accessible
+
+## Login Component
+
+The login component handles user authentication:
+
+```tsx
+const LoginPage = () => {
+  const { login, error } = useAuthContext();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    await login(email, password);
+  };
+  
+  return (
+    <form onSubmit={handleSubmit}>
+      <TextInput
+        label="Email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      />
+      <PasswordInput
+        label="Password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+      />
+      {error && <Alert color="red">{error}</Alert>}
+      <Button type="submit">Login</Button>
+    </form>
+  );
+};
+```
+
+## Session Management
+
+Sessions are managed automatically by the AuthContextProvider:
+- Sessions are restored on page reload
+- Tokens are refreshed automatically
+- Session timeouts trigger redirects to login
+
+## Permission-Based UI
+
+UI elements can be conditionally rendered based on user permissions:
+
+```tsx
+const AdminButton = () => {
+  const { hasPermission } = useAuthContext();
+  
+  if (!hasPermission('manage_users')) {
+    return null;
+  }
+  
+  return <Button>Admin Action</Button>;
+};
+```

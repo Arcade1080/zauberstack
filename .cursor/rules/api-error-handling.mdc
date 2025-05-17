@@ -1,0 +1,76 @@
+---
+description: Useful for server side functionality
+globs: 
+alwaysApply: false
+---
+# Error Handling
+
+The API implements a custom error handling system for consistent error reporting.
+
+## Error Structure
+
+Errors are divided into two categories:
+
+1. **Domain Errors**: Business logic errors defined in the `errors/` directory
+2. **GraphQL API Errors**: GraphQL-specific wrappers for domain errors in `errors/graphql/` directory
+
+## Domain Errors
+
+Domain errors extend the base `Error` class and provide specific error messages:
+
+```typescript
+export class UserNotFoundError extends Error {
+  constructor() {
+    super('User not found');
+  }
+}
+```
+
+## GraphQL API Errors
+
+GraphQL API errors extend `ApolloError` and provide additional metadata:
+
+```typescript
+export class GraphQLApiErrorUserNotFound extends ApolloError {
+  constructor() {
+    super('User not found', 'USER_NOT_FOUND');
+    Object.defineProperty(this, 'name', { value: 'GraphQLApiErrorUserNotFound' });
+  }
+}
+```
+
+## Error Transformation
+
+When throwing errors in resolvers, domain errors are typically transformed into GraphQL API errors:
+
+```typescript
+@Mutation(() => User)
+async resetPassword(@Args('data') resetPasswordInput: ResetPasswordInput) {
+  return this.userService
+    .resetPassword(resetPasswordInput)
+    .then((updatedUser) => updatedUser)
+    .catch((error) => {
+      if (error instanceof UserNotFoundError) {
+        throw new GraphQLApiErrorUserNotFound();
+      } else if (error instanceof TokenNotFoundError) {
+        throw new GraphQLApiErrorTokenNotFound();
+      }
+      throw error;
+    });
+}
+```
+
+## Error Handling Best Practices
+
+1. Define domain-specific errors in the `errors/` directory
+2. Create GraphQL API errors in the `errors/graphql/` directory
+3. Handle expected errors explicitly in your resolvers
+4. Transform domain errors into GraphQL API errors
+5. Include appropriate error codes and messages
+6. Let unexpected errors bubble up to the global error handler
+
+## Important Error Files
+
+- Base domain errors: [packages/api/src/errors/](mdc:packages/api/src/errors)
+- GraphQL API errors: [packages/api/src/errors/graphql/](mdc:packages/api/src/errors/graphql)
+- Global error filter: [packages/api/src/filters/](mdc:packages/api/src/filters)

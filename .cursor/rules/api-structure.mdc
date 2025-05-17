@@ -1,0 +1,52 @@
+---
+description: Useful for server side functionality
+globs: 
+alwaysApply: false
+---
+# API Package Structure and Architecture
+
+The API package is built with NestJS and follows a modular architecture.
+
+## Entry Points
+
+The main entry point is [packages/api/src/main.ts](mdc:packages/api/src/main.ts), which bootstraps the NestJS application.
+The application is configured in [packages/api/src/app.module.ts](mdc:packages/api/src/app.module.ts).
+
+## Directory Structure
+
+The API follows a feature-based structure:
+
+- `src/`: Contains all source code
+  - `auth/`: Authentication related functionality
+  - `user/`: User management
+  - `task/`: Task management functionality
+  - `common/`: Shared utilities and helpers
+  - `config/`: Application configuration
+
+## Database
+
+- Prisma is used as the ORM
+- Schema definition is in [packages/api/prisma/schema.prisma](mdc:packages/api/prisma/schema.prisma)
+- Database migrations are in `prisma/migrations/`
+
+## GraphQL
+
+- The API uses GraphQL as the primary API layer
+- Resolvers are defined in files named `*.resolver.ts`
+- GraphQL models are defined in `*/graphql/models/` directories
+- Inputs are defined in `*/graphql/inputs/` directories
+
+## Authentication
+
+Authentication is handled through Supabase, with implementation details in the `auth` module.
+
+## Error Handling
+
+Custom errors are defined in the `errors/` directory and used throughout the application.
+
+## Important Code Conventions
+
+1. Use resolvers for GraphQL endpoints
+2. Services contain business logic
+3. Use DTOs for data transfer
+4. Follow NestJS dependency injection patterns

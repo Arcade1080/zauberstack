@@ -1,0 +1,103 @@
+---
+description: Useful for server side functionality
+globs: 
+alwaysApply: false
+---
+# Database & Prisma Usage
+
+The API uses Prisma as the ORM to interact with the database.
+
+## Schema
+
+The Prisma schema is defined in [packages/api/prisma/schema.prisma](mdc:packages/api/prisma/schema.prisma), which includes:
+
+- Model definitions (tables)
+- Relations between models
+- Enums
+- Database connection configuration
+
+## Usage in Code
+
+Throughout the API, the PrismaService is injected into services and resolvers:
+
+```typescript
+constructor(private prisma: PrismaService) {}
+```
+
+## Best Practices
+
+1. Always use the PrismaService for database operations
+2. Use Prisma transactions for operations that modify multiple tables
+3. Use the included types from Prisma for typesafety
+4. Follow these query patterns:
+
+### Finding a single record:
+```typescript
+const user = await this.prisma.user.findUnique({
+  where: { id: userId },
+  include: { /* related data */ }
+});
+```
+
+### Finding multiple records:
+```typescript
+const users = await this.prisma.user.findMany({
+  where: { /* conditions */ },
+  orderBy: { createdAt: 'desc' },
+  include: { /* related data */ }
+});
+```
+
+### Creating a record:
+```typescript
+const newUser = await this.prisma.user.create({
+  data: {
+    email: 'user@example.com',
+    // other fields...
+    account: {
+      connect: { id: accountId }
+    }
+  }
+});
+```
+
+### Updating a record:
+```typescript
+const updatedUser = await this.prisma.user.update({
+  where: { id: userId },
+  data: { /* fields to update */ }
+});
+```
+
+### Deleting a record:
+```typescript
+await this.prisma.user.delete({
+  where: { id: userId }
+});
+```
+
+## Relations
+
+When working with relations, prefer to use the relation helpers and nested writes:
+
+```typescript
+// Creating a user with a new account
+const user = await this.prisma.user.create({
+  data: {
+    email: 'user@example.com',
+    account: {
+      create: { /* account data */ }
+    }
+  }
+});
+
+// Connecting to an existing account
+const user = await this.prisma.user.create({
+  data: {
+    email: 'user@example.com',
+    account: {
+      connect: { id: accountId }
+    }
+  }
+});
+```

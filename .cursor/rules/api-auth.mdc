@@ -1,0 +1,80 @@
+---
+description: Useful for server side functionality
+globs: 
+alwaysApply: false
+---
+# Authentication & Authorization
+
+The API uses Supabase for authentication, with NestJS guards and decorators for authorization.
+
+## Authentication
+
+Authentication is handled through Supabase, with JWT tokens verified on each request:
+
+- The authentication flow is implemented in [packages/api/src/auth/auth.service.ts](mdc:packages/api/src/auth/auth.service.ts)
+- Supabase token validation details are described in [packages/api/SUPABASE_TOKEN_VALIDATION.md](mdc:packages/api/SUPABASE_TOKEN_VALIDATION.md)
+
+## Guards
+
+NestJS guards are used to protect routes:
+
+- The main authentication guard is implemented in [packages/api/src/auth/guards/jwt-auth.guard.ts](mdc:packages/api/src/auth/guards/jwt-auth.guard.ts)
+- This guard is applied globally in the application bootstrap
+
+## Current User
+
+The currently authenticated user can be accessed in resolvers with the `@CurrentUser()` decorator:
+
+```typescript
+@Query(() => User)
+async me(@CurrentUser() user: User) {
+  return user;
+}
+```
+
+## Permissions
+
+The API implements a role-based permission system:
+
+- Permissions are defined in [packages/api/src/auth/enums/permission.ts](mdc:packages/api/src/auth/enums/permission.ts)
+- Roles contain sets of permissions
+- Protected routes use the `@RequiredPermissions()` decorator
+
+```typescript
+@Mutation(() => Task)
+@RequiredPermissions(Permission.Create_Tasks)
+async createTask(
+  @Args('data') data: CreateTaskInput,
+  @CurrentUser() user: User,
+) {
+  return this.taskService.createTask(data, user.id);
+}
+```
+
+## Public Routes
+
+For public routes, use the `@Public()` decorator:
+
+```typescript
+@Public()
+@Mutation(() => Token)
+async signIn(@Args('data') data: SignInInput) {
+  return this.authService.signIn(data);
+}
+```
+
+## Authentication Flow
+
+1. User signs in through client using Supabase Auth
+2. Client receives JWT token and includes it in Authorization header
+3. API validates token with Supabase
+4. After validation, the user is made available through `@CurrentUser()`
+5. Permission checks are performed using `@RequiredPermissions()`
+
+## Important Concepts
+
+- All resolvers are protected by default
+- Use `@Public()` to mark specific routes as public
+- Always use the `@CurrentUser()` decorator to access user data
+- Check permissions with `@RequiredPermissions()`
+- Avoid hard-coding user IDs; always use the current user's context

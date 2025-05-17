@@ -11,5 +11,5 @@ export const Paths = {
   TagDetail: '/tags/:id',
   TeamSettings: '/settings/team',
   MagicLink: '/auth/magic-link',
-  AuthCallback: '/auth-callback',
+  AuthCallback: '/auth/callback',
 };

@@ -5,7 +5,7 @@ alwaysApply: false
 ---
 # GraphQL Implementation
 
-The API uses NestJS GraphQL module with a code-first approach.
+The API uses NestJS GraphQL module with a code-first approach. Do not edit the 'schema.graphql' file directly since it will be generated automatically.
 
 ## Core Structure
 

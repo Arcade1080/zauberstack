@@ -49,6 +49,7 @@ DATABASE_URL="postgresql://postgres:your-db-password@your-project-ref.supabase.c
 1. Go to Authentication -> Settings
 2. Enable Email/Password provider
 3. Configure any additional auth providers as needed (Google, GitHub, etc.)
+   - For detailed instructions on setting up OAuth providers, see [SUPABASE_AUTH_PROVIDERS.md](./SUPABASE_AUTH_PROVIDERS.md)
 
 ## Step 6: Database Configuration
 

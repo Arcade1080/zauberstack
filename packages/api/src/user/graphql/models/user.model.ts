@@ -23,5 +23,7 @@ export class User extends BaseModel {
   account: Account;
   @Field(() => Boolean)
   isAccountOwner?: boolean;
+  @Field(() => String, { nullable: true })
+  supabaseId?: string;
   @HideField() password: string;
 }

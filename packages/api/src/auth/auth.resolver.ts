@@ -30,6 +30,11 @@ import { Auth } from './graphql/models/auth.model';
 import { Token } from './graphql/models/token.model';
 import { RequestMagicLinkInput } from './graphql/inputs/request-magic-link.input';
 import { UserService } from '../user/user.service';
+import { CreateUserFromOAuthInput } from './dto/auth.input';
+import { User } from '../user/graphql/models/user.model';
+import { OrganizationService } from '../organization/organization.service';
+import { PrismaService } from 'nestjs-prisma';
+import { Role } from './enums/role';
 
 @Resolver(() => Auth)
 export class AuthResolver {
@@ -37,6 +42,8 @@ export class AuthResolver {
     private readonly authService: AuthService,
     private readonly accountService: AccountService,
     private readonly userService: UserService,
+    private readonly organizationService: OrganizationService,
+    private readonly prisma: PrismaService,
   ) {}
 
   @Public()
@@ -164,6 +171,88 @@ export class AuthResolver {
       }
 
       // Internal server error
+      throw e;
+    }
+  }
+
+  @Public()
+  @Mutation(() => User)
+  async createUserFromOAuth(@Args('data') data: CreateUserFromOAuthInput) {
+    try {
+      // First check if user with this email already exists
+      let existingUser;
+      try {
+        existingUser = await this.userService.getUserByEmail(data.email);
+        if (existingUser) {
+          // If user exists but doesn't have supabaseId, update it
+          if (!existingUser.supabaseId) {
+            await this.prisma.user.update({
+              where: { id: existingUser.id },
+              data: { supabaseId: data.supabaseId },
+            });
+          }
+          return existingUser;
+        }
+      } catch (e) {
+        // User doesn't exist, continue with creation
+      }
+
+      // Create new account with organization for this user
+      const organizationName = data.firstname
+        ? `${data.firstname}'s Organization`
+        : 'New Organization';
+
+      // Create account without owner (we'll add the user as owner later)
+      const account = await this.prisma.account.create({
+        data: {
+          organization: {
+            create: {
+              name: organizationName,
+            },
+          },
+        },
+      });
+
+      // Create the user with OAuth info - provide required fields based on CreateUserInput
+      const user = await this.userService.createUser(
+        {
+          email: data.email,
+          password: Math.random().toString(36).slice(-8), // Generate random password for OAuth users
+          role: Role.Admin,
+        },
+        account.id,
+      );
+
+      // Update user with additional OAuth data
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: {
+          firstname: data.firstname || '',
+          lastname: data.lastname || '',
+          supabaseId: data.supabaseId,
+          avatar: {
+            create: {
+              url: data.avatar,
+            },
+          },
+        },
+      });
+
+      // Update account with owner
+      await this.prisma.account.update({
+        where: { id: account.id },
+        data: {
+          owner: {
+            connect: { id: user.id },
+          },
+        },
+      });
+
+      return user;
+    } catch (e) {
+      if (e instanceof UserEmailAlreadyUsedError) {
+        throw new UserEmailAlreadyUsedGraphQLApiError();
+      }
       throw e;
     }
   }

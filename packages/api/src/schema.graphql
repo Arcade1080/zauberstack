@@ -67,6 +67,14 @@ input CreateTaskInput {
   title: String!
 }
 
+input CreateUserFromOAuthInput {
+  avatar: String
+  email: String!
+  firstname: String
+  lastname: String
+  supabaseId: String!
+}
+
 input CreateUserInput {
   email: String!
   password: String!
@@ -102,6 +110,7 @@ type Mutation {
   changePassword(data: ChangePasswordInput!): User!
   createTag(name: String!): Tag!
   createTask(data: CreateTaskInput!): Task!
+  createUserFromOAuth(data: CreateUserFromOAuthInput!): User!
   deleteAccount(accountId: String!): Account!
   deleteInvitation(invitationId: String!): Invitation!
   deleteTagById(id: String!): Tag!
@@ -319,6 +328,7 @@ type User {
   lastname: String
   plan: String
   role: Role!
+  supabaseId: String
 
   """Identifies the date and time when the object was last updated."""
   updatedAt: Date!

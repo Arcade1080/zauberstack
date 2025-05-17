@@ -18,7 +18,7 @@ import FormBase, { FORM_MODE } from '../../../components/forms/FormBase';
 import { useSignInMutation } from '../../../hooks/useLoginMutation';
 import { useRequestMagicLinkMutation } from '../../../hooks/useRequestMagicLinkMutation';
 import { Paths } from '../../../routes/paths';
-import { IconBrandGoogle } from '@tabler/icons-react';
+import GoogleSignInButton from '../../../components/auth/GoogleSignInButton';
 
 const validationSchema = Yup.object().shape({
   email: Yup.string().email('Please enter a valid email address.'),
@@ -132,18 +132,9 @@ const SignInForm = () => {
                 {emailLoginViaPassword ? 'Sign in' : 'Send magic link'}
               </Button>
 
-              <Divider my="xs" />
-              <Button
-                size="md"
-                onClick={() => {
-                  const apiUrl =
-                    import.meta.env.VITE_API_URL || 'http://localhost:3000';
-                  window.location.href = `${apiUrl}/auth/google`;
-                }}
-                leftSection={<IconBrandGoogle />}
-              >
-                Sign in with Google
-              </Button>
+              <Divider my="xs" label="OR" labelPosition="center" />
+
+              <GoogleSignInButton fullWidth />
             </Stack>
             <Space h="xl" />
             <Group justify="space-between" mb="md">

@@ -271,14 +271,25 @@ export class UserResolver {
     return userData?.avatar?.url || null;
   }
 
-  // @ResolveField('isAccountOwner')
-  // async isAccountOwner(@Parent() user: User) {
-  //   if (!user || !user.id) return false;
-  //   const accountOwner = await this.prismaService.user
-  //     .findUnique({ where: { id: user.id } })
-  //     .account({ select: { owner: true } });
-  //   return accountOwner?.owner?.id === user.id;
-  // }
+  @ResolveField('isAccountOwner')
+  async isAccountOwner(@Parent() user: User) {
+    if (!user || !user.id) return false;
+
+    const userData = await this.prismaService.user.findUnique({
+      where: { id: user.id },
+      select: {
+        ownerOfId: true,
+        accountId: true,
+      },
+    });
+
+    // A user is an account owner if they have an ownerOfId field
+    // that matches their accountId
+    return (
+      userData?.ownerOfId != null && userData?.ownerOfId === userData?.accountId
+    );
+  }
+
   @ResolveField('plan')
   async plan(@Parent() user: User) {
     const plan = await this.prismaService.user

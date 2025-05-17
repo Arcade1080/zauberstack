@@ -21,7 +21,7 @@ export class User extends BaseModel {
   plan?: string;
   @Field(() => Account)
   account: Account;
-  // @Field(() => Boolean)
-  // isAccountOwner?: boolean;
+  @Field(() => Boolean)
+  isAccountOwner?: boolean;
   @HideField() password: string;
 }

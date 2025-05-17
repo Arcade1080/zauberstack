@@ -315,6 +315,7 @@ type User {
   email: String!
   firstname: String
   id: String!
+  isAccountOwner: Boolean
   lastname: String
   plan: String
   role: Role!

@@ -7,6 +7,7 @@ import {
   Stack,
   TextInput,
   rem,
+  Loader,
 } from '@mantine/core';
 import { IconUpload, IconX } from '@tabler/icons-react';
 import React, { useState, useEffect } from 'react';
@@ -28,6 +29,7 @@ interface ProfileFormProps {
 
 const ProfileForm = ({ onSubmit }: ProfileFormProps) => {
   const [previewFile, setPreviewFile] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [debug, setDebug] = useState({
     avatarPath: null,
     mediaUrl: null,
@@ -59,14 +61,29 @@ const ProfileForm = ({ onSubmit }: ProfileFormProps) => {
     return getMediaUrl(avatarPath);
   };
 
+  // Get the mutation function
+  const [updateProfile] = useUpdateProfileSettingsMutation();
+
+  // Create a wrapped onSubmit function that tracks submission state
+  const handleSubmit = async (values: any) => {
+    try {
+      setIsSubmitting(true);
+      const result = await updateProfile(values);
+      onSubmit(result);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <FormBase
       loader={QUERY_GET_ME}
-      onSubmit={onSubmit}
+      onSubmit={handleSubmit}
       formatInitialValues={(data: any) => {
-        console.log('Complete API response:', JSON.stringify(data, null, 2));
         const { firstname, lastname, email, id, avatar } = data?.me ?? {};
-        console.log('Avatar from API:', avatar);
+
         return {
           firstname,
           lastname,
@@ -188,27 +205,22 @@ const ProfileForm = ({ onSubmit }: ProfileFormProps) => {
                 <Space h="xl" />
                 <Space h="xl" />
                 {/* Debug display */}
-                <div
-                  style={{
-                    marginTop: '20px',
-                    padding: '10px',
-                    background: '#f5f5f5',
-                    fontSize: '12px',
-                  }}
-                >
-                  <div>Avatar path: {JSON.stringify(debug.avatarPath)}</div>
-                  <div>Media URL: {debug.mediaUrl}</div>
-                  <div>
-                    Supabase URL:{' '}
-                    {import.meta.env.VITE_SUPABASE_URL || 'Not set'}
-                  </div>
-                  <div>Form values: {JSON.stringify(form.values)}</div>
-                  <div>
-                    Is submitting: {form.isSubmitting ? 'true' : 'false'}
-                  </div>
-                </div>
-                <Button size="md" disabled={form.isSubmitting} type="submit">
-                  Save changes
+
+                <Button size="md" disabled={isSubmitting} type="submit">
+                  {isSubmitting ? (
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                      }}
+                    >
+                      <Loader size="xs" color="white" />
+                      <span>Saving...</span>
+                    </div>
+                  ) : (
+                    'Save changes'
+                  )}
                 </Button>
               </Section>
             </Stack>

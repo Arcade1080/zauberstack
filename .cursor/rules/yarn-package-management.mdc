@@ -1,0 +1,62 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Yarn Package Management in Monorepo
+
+## Adding New Packages
+
+Always add new packages from the project root using the workspace syntax. This ensures proper monorepo dependency management and keeps the yarn.lock file consistent.
+
+### Correct Way:
+
+```bash
+# Adding a package to a specific workspace
+yarn workspace api add package-name
+yarn workspace client add package-name
+yarn workspace website add package-name
+
+# Adding a dev dependency to a specific workspace
+yarn workspace api add -D package-name
+
+# Adding a package to all workspaces
+yarn workspaces foreach add package-name
+```
+
+### Incorrect:
+
+```bash
+# DON'T navigate to the package directory and add dependencies directly
+cd packages/api && yarn add package-name  # Wrong approach
+
+# DON'T use npm in this project
+npm install package-name  # Wrong approach
+```
+
+## Dependency Management Best Practices
+
+1. **Consistent Versions**: Use the same version of shared dependencies across workspaces when possible.
+
+2. **Root Dependencies**: Only add development tools and monorepo management utilities to the root package.json. All other dependencies should be in the appropriate workspace.
+
+3. **Peer Dependencies**: For libraries shared between packages, consider using peer dependencies.
+
+4. **Updating Dependencies**: Update dependencies using:
+   ```bash
+   yarn upgrade-interactive
+   ```
+
+5. **Resolving Conflicts**: Use the `resolutions` field in the root package.json for forcing specific versions.
+
+## Example from this Project
+
+In the root package.json, we have workspace definitions:
+
+```json
+"workspaces": [
+  "packages/*"
+]
+```
+
+This configuration allows Yarn to manage dependencies across all packages in the monorepo.

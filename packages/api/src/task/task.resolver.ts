@@ -86,11 +86,12 @@ export class TaskResolver {
     const subscriptionLimits =
       this.configService.get<SubscriptionLimitConfig>('subscriptionLimits');
 
-    const limit =
-      subscriptionLimits[
-        user.account?.subscriptions[0]?.stripeProductName.toLowerCase() ||
-          'free'
-      ]['tasks'];
+    const subscriptionProductName =
+      user.account?.subscriptions?.length > 0
+        ? user.account.subscriptions[0].stripeProductName.toLowerCase()
+        : 'free';
+
+    const limit = subscriptionLimits[subscriptionProductName]['tasks'];
 
     if (limit) {
       const count = await this.prismaService.task.count({

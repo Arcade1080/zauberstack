@@ -62,9 +62,12 @@ export class UserService {
       newUserData.avatarId === null ||
       typeof newUserData.avatarId === 'undefined'
     ) {
-      avatar = {
-        disconnect: true,
-      };
+      // Only disconnect if avatarId is explicitly set to null
+      if (newUserData.avatarId === null) {
+        avatar = {
+          disconnect: true,
+        };
+      }
     } else if (typeof newUserData.avatarId === 'string') {
       avatar = {
         connect: {

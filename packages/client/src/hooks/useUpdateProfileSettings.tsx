@@ -64,12 +64,11 @@ export const useUpdateProfileSettingsMutation = (): Array<any> => {
           throw uploadError;
         }
 
-        // Get the public URL of the uploaded file
-        const { data: publicUrlData } = supabase.storage
-          .from('media')
-          .getPublicUrl(filePath);
-
-        avatarUrl = publicUrlData.publicUrl;
+        // Get the public URL
+        // NOTE: We're setting the avatarUrl value to just the relative path
+        // within the bucket, rather than the full URL. This simplifies handling
+        // when environment URLs change.
+        avatarUrl = filePath;
 
         // 2. Update Supabase user metadata with the avatar URL
         const { error: updateUserError } = await supabase.auth.updateUser({

@@ -259,13 +259,17 @@ export class UserResolver {
       });
   }
 
-  // @ResolveField('avatar')
-  // async avatar(@Parent() user: User) {
-  //   const avatar = await this.prismaService.user
-  //     .findUnique({ where: { id: user.id } })
-  //     .avatar({ select: { filePath: true } });
-  //   return avatar?.filePath;
-  // }
+  @ResolveField('avatar')
+  async avatar(@Parent() user: User) {
+    // Check if user has an avatar relation
+    const userData = await this.prismaService.user.findUnique({
+      where: { id: user.id },
+      include: { avatar: true },
+    });
+
+    // Return the URL from the avatar relation if it exists
+    return userData?.avatar?.url || null;
+  }
 
   // @ResolveField('isAccountOwner')
   // async isAccountOwner(@Parent() user: User) {

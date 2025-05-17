@@ -54,10 +54,47 @@ export const showNotification = ({
   });
 };
 
-export const getMediaUrl = (filePath: string | undefined) => {
+export const getMediaUrl = (filePath: string | undefined | File) => {
+  // Return undefined for falsy values (null, undefined, empty string)
   if (!filePath) {
     return undefined;
   }
+
+  // If filePath is a File object, return an object URL
+  if (filePath instanceof File) {
+    return URL.createObjectURL(filePath);
+  }
+
+  // At this point, filePath should be a string
+  // Explicitly check to be sure
+  if (typeof filePath !== 'string') {
+    console.error(
+      'Invalid filePath type in getMediaUrl:',
+      typeof filePath,
+      filePath,
+    );
+    return undefined;
+  }
+
+  // If it's already a complete URL, return it as is
+  if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
+    return filePath;
+  }
+
+  // For Supabase storage paths
+  const { VITE_SUPABASE_URL } = import.meta.env;
+  if (VITE_SUPABASE_URL) {
+    // Format: /storage/v1/object/public/media/path/to/file
+    // This follows Supabase Storage's URL structure for public buckets
+    return `${VITE_SUPABASE_URL}/storage/v1/object/public/media/${filePath}`;
+  }
+
+  // Fallback to the old method
   const { VITE_FILE_SERVER_URL } = import.meta.env;
-  return `${VITE_FILE_SERVER_URL}${filePath}`;
+  if (VITE_FILE_SERVER_URL) {
+    return `${VITE_FILE_SERVER_URL}${filePath}`;
+  }
+
+  // If neither env var is available, try returning the path as is
+  return filePath;
 };

@@ -1,6 +1,7 @@
 export enum Permission {
   Edit_Users = 'edit-users',
   Invite_Users = 'invite-users',
+  Manage_Users = 'manage-users',
   Read_Subscriptions = 'read-subscriptions',
   Edit_Subscriptions = 'edit-subscriptions',
   Delete_Tasks = 'delete-tasks',

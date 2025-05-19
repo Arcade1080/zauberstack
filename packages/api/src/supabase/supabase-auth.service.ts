@@ -104,4 +104,29 @@ export class SupabaseAuthService {
 
     return dbUser;
   }
+
+  /**
+   * Delete a Supabase user by ID
+   * This requires admin privileges (using the service key)
+   */
+  async deleteSupabaseUser(supabaseUserId: string): Promise<boolean> {
+    if (!supabaseUserId) {
+      throw new Error('Supabase user ID is required');
+    }
+
+    try {
+      const { error } = await this.supabaseService
+        .getClient()
+        .auth.admin.deleteUser(supabaseUserId);
+
+      if (error) {
+        throw error;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error deleting Supabase user:', error);
+      throw error;
+    }
+  }
 }

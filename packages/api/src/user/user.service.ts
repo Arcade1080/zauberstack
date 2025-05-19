@@ -23,6 +23,7 @@ import { ForgotPasswordInput } from './graphql/inputs/forgot-password-request.in
 import { ResetPasswordInput } from './graphql/inputs/reset-password.input';
 import { UpdateUserInput } from './graphql/inputs/update-user.input';
 import { RegisterUserFromOAuthInput } from './graphql/inputs/create-user-from-oauth.input';
+import { SupabaseAuthService } from '../supabase/supabase-auth.service';
 
 @Injectable()
 export class UserService {
@@ -32,6 +33,7 @@ export class UserService {
     private configService: ConfigService,
     private mailService: MailService,
     private jwtService: JwtService,
+    private supabaseAuthService: SupabaseAuthService,
   ) {}
 
   async getUserByEmail(email: string): Promise<User> {
@@ -659,5 +661,62 @@ export class UserService {
     });
 
     return user;
+  }
+
+  // Add new method for user deletion
+  /**
+   * Delete a user completely, including their Supabase account if applicable
+   * @param userId The ID of the user to delete
+   * @returns The deleted user
+   */
+  async deleteUser(userId: string): Promise<User> {
+    // Find the user
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        avatar: true,
+      },
+    });
+
+    if (!user) {
+      throw new UserNotFoundError();
+    }
+
+    // Delete the user's Supabase account if they have one
+    if (user.supabaseId) {
+      try {
+        await this.supabaseAuthService.deleteSupabaseUser(user.supabaseId);
+      } catch (error) {
+        console.error(
+          `Failed to delete Supabase user ${user.supabaseId}:`,
+          error,
+        );
+        // Continue with deletion of database user
+      }
+    }
+
+    // Delete avatar media if it exists
+    if (user.avatar) {
+      try {
+        await this.prisma.media.delete({
+          where: { id: user.avatar.id },
+        });
+      } catch (error) {
+        console.error(`Failed to delete avatar for user ${userId}:`, error);
+        // Continue with deletion of user
+      }
+    }
+
+    // Delete any tokens associated with the user
+    await this.prisma.token.deleteMany({
+      where: { userId },
+    });
+
+    // Finally, delete the user
+    const deletedUser = await this.prisma.user.delete({
+      where: { id: userId },
+    });
+
+    return deletedUser;
   }
 }

@@ -105,11 +105,13 @@ type Mutation {
   createUserFromOAuth(data: OAuthUserInput!): User!
   deleteAccount(accountId: String!): Account!
   deleteInvitation(invitationId: String!): Invitation!
+  deleteMyAccount: User!
   deleteTagById(id: String!): Tag!
   deleteTags(tagIds: [String!]!): String!
   deleteTaskById(taskId: String!): Task!
   deleteTasks(taskIds: [String!]!): String!
   deleteTeamMember(memberId: String!): Account!
+  deleteUser(userId: String!): User!
   inviteUsers(data: InviteesInput!): String!
   refreshToken: Token!
   registerFromOAuth(data: RegisterUserFromOAuthInput!): Token!

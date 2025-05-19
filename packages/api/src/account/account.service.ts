@@ -6,6 +6,7 @@ import { Role } from '../auth/enums/role';
 import { StripeService } from '../stripe/stripe.service';
 import { UserService } from '../user/user.service';
 import { SignUpDto } from './graphql/inputs/create-account.input';
+import { SupabaseAuthService } from '../supabase/supabase-auth.service';
 
 @Injectable()
 export class AccountService {
@@ -14,6 +15,7 @@ export class AccountService {
     private userService: UserService,
     private stripeService: StripeService,
     private configService: ConfigService,
+    private supabaseAuthService: SupabaseAuthService,
   ) {}
 
   async deleteAccount(accountId: string): Promise<Account> {
@@ -47,8 +49,26 @@ export class AccountService {
       }
     }
 
-    // Delete the associated members of the account
+    // Delete the associated members of the account and their Supabase accounts
     if (account.member && account.member.length > 0) {
+      for (const member of account.member) {
+        // Delete the Supabase user if they have a supabaseId
+        if (member.supabaseId) {
+          try {
+            await this.supabaseAuthService.deleteSupabaseUser(
+              member.supabaseId,
+            );
+          } catch (error) {
+            console.error(
+              `Failed to delete Supabase user ${member.supabaseId}:`,
+              error,
+            );
+            // Continue with deletion of other users
+          }
+        }
+      }
+
+      // Delete all users from the database
       const memberIds = account.member.map((member) => member.id);
       await this.prismaService.user.deleteMany({
         where: { id: { in: memberIds } },

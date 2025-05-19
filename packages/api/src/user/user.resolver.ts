@@ -305,6 +305,33 @@ export class UserResolver {
     return true;
   }
 
+  /**
+   * Delete the currently authenticated user
+   * Note: This is a destructive operation and cannot be undone
+   */
+  @Mutation(() => User)
+  async deleteMyAccount(@CurrentUser() user: User) {
+    if (this.configService.get('IS_DEMO') === '1') {
+      throw new Error('Sorry, but this feature is disabled in demo mode.');
+    }
+
+    return this.userService.deleteUser(user.id);
+  }
+
+  /**
+   * Admin operation to delete a specific user by ID
+   * Requires Manage_Users permission
+   */
+  @Mutation(() => User)
+  @RequiredPermissions(Permission.Manage_Users)
+  async deleteUser(@Args('userId') userId: string) {
+    if (this.configService.get('IS_DEMO') === '1') {
+      throw new Error('Sorry, but this feature is disabled in demo mode.');
+    }
+
+    return this.userService.deleteUser(userId);
+  }
+
   @Public()
   @Mutation(() => Token)
   async registerFromOAuth(@Args('data') userData: RegisterUserFromOAuthInput) {

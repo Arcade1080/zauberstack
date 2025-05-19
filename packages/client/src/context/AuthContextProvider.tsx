@@ -243,6 +243,11 @@ const AuthContextProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         setLoading(true);
 
+        // Check if we're currently in the OAuth callback flow
+        const isOAuthCallback =
+          window.location.pathname.includes('/auth/callback');
+        console.log('Auth check - isOAuthCallback:', isOAuthCallback);
+
         // Get current session - Supabase handles retrieving from storage
         const { data } = await supabase.auth.getSession();
 
@@ -275,16 +280,33 @@ const AuthContextProvider = ({ children }: { children: React.ReactNode }) => {
                 });
               } else {
                 // If we can't format user details, sign out
+                // But skip during OAuth callback to let it create the user
+
                 await signOut();
               }
             } else {
-              // If no user details, sign out
+              // If no user details, sign out - unless in OAuth callback flow
+
               await signOut();
             }
           } catch (error) {
             console.error('Failed to fetch user details:', error);
-            // If we can't get user details, sign out
-            await signOut();
+
+            // Check if error is due to user not found
+            const isUserNotFound = error.graphQLErrors?.some(
+              (e) => e.extensions?.code === 'user_not_found',
+            );
+
+            // If error is "user not found" and we're in the OAuth callback flow,
+            // don't sign out - let the callback create the user
+            if (isUserNotFound) {
+              console.log(
+                'User not found during OAuth callback - this is expected',
+              );
+            } else {
+              // Otherwise sign out
+              await signOut();
+            }
           }
         } else {
           // No session, make sure we're signed out
@@ -312,50 +334,50 @@ const AuthContextProvider = ({ children }: { children: React.ReactNode }) => {
     checkAuthStatus();
 
     // Set up auth state change listener
-    // const { data: authListener } = supabase.auth.onAuthStateChange(
-    //   async (event, session) => {
-    //     console.log('Auth state changed:', event);
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('Auth state changed:', event);
 
-    //     if (event === 'SIGNED_IN' && session) {
-    //       dispatch({
-    //         type: AuthContextActionType.IS_AUTHENTICATED,
-    //         payload: true,
-    //       });
+        if (event === 'SIGNED_IN' && session) {
+          dispatch({
+            type: AuthContextActionType.IS_AUTHENTICATED,
+            payload: true,
+          });
 
-    //       // try {
-    //       //   const response = await apolloClient.query({
-    //       //     query: QUERY_GET_ME,
-    //       //     context: {
-    //       //       headers: {
-    //       //         Authorization: `Bearer ${session.access_token}`,
-    //       //       },
-    //       //     },
-    //       //   });
+          try {
+            const response = await apolloClient.query({
+              query: QUERY_GET_ME,
+              context: {
+                headers: {
+                  Authorization: `Bearer ${session.access_token}`,
+                },
+              },
+            });
 
-    //       //   if (response?.data?.me) {
-    //       //     const userDetails = response.data.me;
-    //       //     const _userDetails = formatUserDetails(userDetails);
-    //       //     if (_userDetails) {
-    //       //       setUserDetails(_userDetails);
-    //       //     }
-    //       //   }
-    //       // } catch (error) {
-    //       //   console.error('Failed to fetch user details:', error);
-    //       //   // Don't update auth state if we can't get user details
-    //       // }
-    //     } else if (event === 'SIGNED_OUT') {
-    //       Storage.setUserDetails(null);
+            if (response?.data?.me) {
+              const userDetails = response.data.me;
+              const _userDetails = formatUserDetails(userDetails);
+              if (_userDetails) {
+                setUserDetails(_userDetails);
+              }
+            }
+          } catch (error) {
+            console.error('Failed to fetch user details:', error);
+            // Don't update auth state if we can't get user details
+          }
+        } else if (event === 'SIGNED_OUT') {
+          Storage.setUserDetails(null);
 
-    //       dispatch({
-    //         type: AuthContextActionType.SIGN_OUT,
-    //       });
-    //     }
-    //   },
-    // );
+          dispatch({
+            type: AuthContextActionType.SIGN_OUT,
+          });
+        }
+      },
+    );
 
     // Clean up the listener
     return () => {
-      // authListener.subscription.unsubscribe();
+      authListener.subscription.unsubscribe();
     };
   }, []);
 

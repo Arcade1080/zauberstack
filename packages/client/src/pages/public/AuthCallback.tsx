@@ -49,6 +49,7 @@ function AuthCallback() {
                 },
               },
             });
+            console.log('existing user', response);
 
             // User exists, redirect to dashboard
             navigate('/');

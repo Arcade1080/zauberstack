@@ -22,6 +22,7 @@ import { ChangePasswordInput } from './graphql/inputs/change-password.input';
 import { ForgotPasswordInput } from './graphql/inputs/forgot-password-request.input';
 import { ResetPasswordInput } from './graphql/inputs/reset-password.input';
 import { UpdateUserInput } from './graphql/inputs/update-user.input';
+import { RegisterUserFromOAuthInput } from './graphql/inputs/create-user-from-oauth.input';
 
 @Injectable()
 export class UserService {
@@ -542,5 +543,121 @@ export class UserService {
     });
 
     return token;
+  }
+
+  async createUserFromOAuth(input: RegisterUserFromOAuthInput): Promise<User> {
+    // Check if user already exists
+    const existingUser = await this.prisma.user.findFirst({
+      where: {
+        email: input.email,
+      },
+    });
+
+    if (existingUser) {
+      return existingUser;
+    }
+
+    // Create or get default role (typically 'user')
+    const defaultRole = await this.prisma.role.findFirst({
+      where: {
+        name: 'user',
+      },
+    });
+
+    if (!defaultRole) {
+      throw new RoleNotFoundError();
+    }
+
+    // Create a new account for this OAuth user
+    const accountName =
+      `${input.firstname || ''} ${input.lastname || ''}`.trim() ||
+      `${input.email.split('@')[0]}'s Account`;
+
+    let account;
+    let user;
+
+    // Use a transaction to ensure consistency
+    await this.prisma.$transaction(async (prisma) => {
+      // Create a new account
+      account = await prisma.account.create({
+        data: {
+          // Create an organization for the account
+          organization: {
+            create: {
+              name: accountName,
+            },
+          },
+        },
+      });
+
+      // Create the user
+      const userData = {
+        email: input.email,
+        firstname: input.firstname || '',
+        lastname: input.lastname || '',
+        status: StatusEnum.active,
+        supabaseId: input.provider === 'google' ? input.email : null, // Store provider-specific ID if needed
+        role: {
+          connect: {
+            id: defaultRole.id,
+          },
+        },
+        account: {
+          connect: {
+            id: account.id,
+          },
+        },
+        // OAuth users don't have a password, but the schema requires one
+        // This creates a random password they'll never use
+        password: await this.passwordService.hashPassword(
+          Math.random().toString(36).substring(2, 15),
+        ),
+      };
+
+      // Create the user
+      user = await prisma.user.create({
+        data: userData,
+      });
+
+      // Set user as account owner
+      await prisma.account.update({
+        where: { id: account.id },
+        data: {
+          owner: {
+            connect: {
+              id: user.id,
+            },
+          },
+        },
+      });
+
+      // Handle avatar if provided
+      if (input.avatarUrl) {
+        const avatarMedia = await prisma.media.create({
+          data: {
+            id: `avatar_${user.id}`,
+            url: input.avatarUrl,
+            filename: 'avatar',
+            originalFilename: 'avatar',
+            mimeType: 'image/jpeg',
+            collection: 'avatars',
+            userId: user.id,
+          },
+        });
+
+        await prisma.user.update({
+          where: { id: user.id },
+          data: {
+            avatar: {
+              connect: {
+                id: avatarMedia.id,
+              },
+            },
+          },
+        });
+      }
+    });
+
+    return user;
   }
 }

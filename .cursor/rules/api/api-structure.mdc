@@ -1,7 +1,7 @@
 ---
-description: Useful for server side functionality
+description: 
 globs: 
-alwaysApply: false
+alwaysApply: true
 ---
 # API Package Structure and Architecture
 

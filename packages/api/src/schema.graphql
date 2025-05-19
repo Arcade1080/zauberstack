@@ -67,14 +67,6 @@ input CreateTaskInput {
   title: String!
 }
 
-input CreateUserFromOAuthInput {
-  avatar: String
-  email: String!
-  firstname: String
-  lastname: String
-  supabaseId: String!
-}
-
 input CreateUserInput {
   email: String!
   password: String!
@@ -110,7 +102,7 @@ type Mutation {
   changePassword(data: ChangePasswordInput!): User!
   createTag(name: String!): Tag!
   createTask(data: CreateTaskInput!): Task!
-  createUserFromOAuth(data: CreateUserFromOAuthInput!): User!
+  createUserFromOAuth(data: OAuthUserInput!): User!
   deleteAccount(accountId: String!): Account!
   deleteInvitation(invitationId: String!): Invitation!
   deleteTagById(id: String!): Tag!
@@ -120,6 +112,7 @@ type Mutation {
   deleteTeamMember(memberId: String!): Account!
   inviteUsers(data: InviteesInput!): String!
   refreshToken: Token!
+  registerFromOAuth(data: RegisterUserFromOAuthInput!): Token!
   requestCheckoutUrl(productId: String!): String!
   requestCustomerPortalUrl: String!
   requestMagicLink(data: RequestMagicLinkInput!): String!
@@ -133,6 +126,14 @@ type Mutation {
   updateTag(id: String!, name: String!): Tag!
   updateTask(data: UpdateTaskInput!): Task!
   updateUser(data: UpdateUserInput!): User!
+}
+
+input OAuthUserInput {
+  avatar: String
+  email: String!
+  firstname: String
+  lastname: String
+  supabaseId: String!
 }
 
 """
@@ -185,6 +186,14 @@ type Query {
   getTasks(after: String, before: String, first: Int, last: Int, orderBy: TaskOrder, query: String, skip: Int, status: String, tags: [String!]): TaskConnection!
   me: User!
   tag(id: String!): Tag!
+}
+
+input RegisterUserFromOAuthInput {
+  avatarUrl: String
+  email: String!
+  firstname: String
+  lastname: String
+  provider: String!
 }
 
 input RequestMagicLinkInput {

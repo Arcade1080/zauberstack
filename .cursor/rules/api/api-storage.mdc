@@ -1,7 +1,7 @@
 ---
-description: Useful for server side functionality. Especially for features that include handling supabase storage
+description: 
 globs: 
-alwaysApply: false
+alwaysApply: true
 ---
 
 # Storage Rules

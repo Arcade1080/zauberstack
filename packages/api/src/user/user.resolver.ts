@@ -36,6 +36,7 @@ import { ResetPasswordInput } from './graphql/inputs/reset-password.input';
 import { UpdateUserInput } from './graphql/inputs/update-user.input';
 import { User } from './graphql/models/user.model';
 import { UserService } from './user.service';
+import { RegisterUserFromOAuthInput } from './graphql/inputs/create-user-from-oauth.input';
 
 @Resolver(() => User)
 export class UserResolver {
@@ -302,5 +303,29 @@ export class UserResolver {
   async signOut() {
     // For Supabase, sign out is handled on the client. This mutation is a placeholder for future server-side cleanup if needed.
     return true;
+  }
+
+  @Public()
+  @Mutation(() => Token)
+  async registerFromOAuth(@Args('data') userData: RegisterUserFromOAuthInput) {
+    try {
+      const user = await this.userService.createUserFromOAuth(userData);
+
+      // Generate tokens for the newly registered user
+      const { accessToken, refreshToken } =
+        await this.authService.generateTokens({
+          userId: user.id,
+        });
+
+      return {
+        accessToken,
+        refreshToken: refreshToken.token,
+      };
+    } catch (error) {
+      if (error instanceof UserEmailAlreadyUsedError) {
+        throw new UserEmailAlreadyUsedGraphQLApiError();
+      }
+      throw error;
+    }
   }
 }

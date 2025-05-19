@@ -30,7 +30,7 @@ import { Auth } from './graphql/models/auth.model';
 import { Token } from './graphql/models/token.model';
 import { RequestMagicLinkInput } from './graphql/inputs/request-magic-link.input';
 import { UserService } from '../user/user.service';
-import { CreateUserFromOAuthInput } from './dto/auth.input';
+import { OAuthUserInput } from './dto/auth.input';
 import { User } from '../user/graphql/models/user.model';
 import { OrganizationService } from '../organization/organization.service';
 import { PrismaService } from 'nestjs-prisma';
@@ -177,7 +177,7 @@ export class AuthResolver {
 
   @Public()
   @Mutation(() => User)
-  async createUserFromOAuth(@Args('data') data: CreateUserFromOAuthInput) {
+  async createUserFromOAuth(@Args('data') data: OAuthUserInput) {
     try {
       // First check if user with this email already exists
       let existingUser;

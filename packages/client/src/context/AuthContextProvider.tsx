@@ -312,50 +312,50 @@ const AuthContextProvider = ({ children }: { children: React.ReactNode }) => {
     checkAuthStatus();
 
     // Set up auth state change listener
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('Auth state changed:', event);
+    // const { data: authListener } = supabase.auth.onAuthStateChange(
+    //   async (event, session) => {
+    //     console.log('Auth state changed:', event);
 
-        if (event === 'SIGNED_IN' && session) {
-          dispatch({
-            type: AuthContextActionType.IS_AUTHENTICATED,
-            payload: true,
-          });
+    //     if (event === 'SIGNED_IN' && session) {
+    //       dispatch({
+    //         type: AuthContextActionType.IS_AUTHENTICATED,
+    //         payload: true,
+    //       });
 
-          // try {
-          //   const response = await apolloClient.query({
-          //     query: QUERY_GET_ME,
-          //     context: {
-          //       headers: {
-          //         Authorization: `Bearer ${session.access_token}`,
-          //       },
-          //     },
-          //   });
+    //       // try {
+    //       //   const response = await apolloClient.query({
+    //       //     query: QUERY_GET_ME,
+    //       //     context: {
+    //       //       headers: {
+    //       //         Authorization: `Bearer ${session.access_token}`,
+    //       //       },
+    //       //     },
+    //       //   });
 
-          //   if (response?.data?.me) {
-          //     const userDetails = response.data.me;
-          //     const _userDetails = formatUserDetails(userDetails);
-          //     if (_userDetails) {
-          //       setUserDetails(_userDetails);
-          //     }
-          //   }
-          // } catch (error) {
-          //   console.error('Failed to fetch user details:', error);
-          //   // Don't update auth state if we can't get user details
-          // }
-        } else if (event === 'SIGNED_OUT') {
-          Storage.setUserDetails(null);
+    //       //   if (response?.data?.me) {
+    //       //     const userDetails = response.data.me;
+    //       //     const _userDetails = formatUserDetails(userDetails);
+    //       //     if (_userDetails) {
+    //       //       setUserDetails(_userDetails);
+    //       //     }
+    //       //   }
+    //       // } catch (error) {
+    //       //   console.error('Failed to fetch user details:', error);
+    //       //   // Don't update auth state if we can't get user details
+    //       // }
+    //     } else if (event === 'SIGNED_OUT') {
+    //       Storage.setUserDetails(null);
 
-          dispatch({
-            type: AuthContextActionType.SIGN_OUT,
-          });
-        }
-      },
-    );
+    //       dispatch({
+    //         type: AuthContextActionType.SIGN_OUT,
+    //       });
+    //     }
+    //   },
+    // );
 
     // Clean up the listener
     return () => {
-      authListener.subscription.unsubscribe();
+      // authListener.subscription.unsubscribe();
     };
   }, []);
 

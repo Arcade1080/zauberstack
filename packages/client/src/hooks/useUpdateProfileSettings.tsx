@@ -23,7 +23,7 @@ export const useUpdateProfileSettingsMutation = (): Array<any> => {
 
   const updateProfile = async (data: UpdateProfileDto) => {
     const { lastname, firstname, avatar } = data;
-    let avatarUrl: string | null = undefined;
+    let avatarUrl: string | null;
 
     try {
       // 1. Handle avatar upload to Supabase Storage if a new file is provided

@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import supabase from '../../lib/supabaseClient';
 import { Alert, Center, Loader, Stack, Text } from '@mantine/core';
 import { gql, useMutation } from '@apollo/client';
+import supabase from '../../lib/supabaseClient';
 import apolloClient, { RESIGN_IN } from '../../lib/apolloClient';
 import { QUERY_GET_ME } from '../../api/queries';
 
 // Mutation to create a user from OAuth data
 const CREATE_USER_FROM_OAUTH = gql`
-  mutation CreateUserFromOAuth($input: CreateUserFromOAuthInput!) {
+  mutation CreateUserFromOAuth($input: OAuthUserInput!) {
     createUserFromOAuth(data: $input) {
       id
       email
@@ -32,7 +32,7 @@ function AuthCallback() {
         // Process the OAuth callback
         const { data: sessionData, error: sessionError } =
           await supabase.auth.getSession();
-        console.log('sessionData', sessionData);
+
         if (sessionError) {
           throw sessionError;
         }
@@ -49,15 +49,28 @@ function AuthCallback() {
                 },
               },
             });
-            console.log('response', response);
-            if (!response?.data?.me) {
-              // User doesn't exist in your system but exists in Supabase
-              // First, get Google user profile data from Supabase
-              console.log('no user found');
+
+            // User exists, redirect to dashboard
+            navigate('/');
+          } catch (err: any) {
+            console.error('Error processing user:', err);
+
+            // Check if this is a USER_NOT_FOUND error
+            const isUserNotFound = err.graphQLErrors?.some(
+              (e: any) => e.extensions?.code === 'user_not_found',
+            );
+
+            if (isUserNotFound) {
+              // User doesn't exist in database but exists in Supabase
+
               setStatusMessage('Creating new account...');
+
+              // Get user data from Supabase
               const { data: userData } = await supabase.auth.getUser();
+
               const googleData = userData?.user?.user_metadata;
-              // Create user in your database with data from Google profile
+
+              // Create user in database with data from Google profile
               await apolloClient.mutate({
                 mutation: CREATE_USER_FROM_OAUTH,
                 variables: {
@@ -77,15 +90,15 @@ function AuthCallback() {
                   },
                 },
               });
+
               setStatusMessage('Account created successfully!');
+              // Redirect to dashboard after creating account
+              navigate('/');
+            } else {
+              // Other error occurred
+              console.log('Error details:', err.graphQLErrors);
+              setError(`Failed to authenticate: ${err.message}`);
             }
-            // Redirect to dashboard after successful sign-in or creation
-            navigate('/');
-          } catch (err: any) {
-            console.log('err', err);
-            console.error('Error processing user:', err);
-            setError(`Failed to create or retrieve account: ${err.message}`);
-            setTimeout(() => navigate('/sign-in'), 3000);
           }
         } else {
           // No session found
@@ -95,6 +108,7 @@ function AuthCallback() {
         }
       } catch (err: any) {
         console.error('Error during auth callback:', err);
+        console.log('Error details:', err.graphQLErrors);
         setError(err.message || 'Authentication failed. Please try again.');
         setTimeout(() => navigate('/sign-in'), 3000);
       }

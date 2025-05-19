@@ -56,11 +56,13 @@ const Router = () => (
         <Route
           element={<ForgotPasswordPage />}
           path={Paths.ForgotPassword}
-        ></Route>
+        >
+        </Route>
         <Route
           element={<ResetPasswordPage />}
           path={Paths.ResetPassword}
-        ></Route>
+        >
+        </Route>
         <Route element={<MagicLinkPage />} path={Paths.MagicLink}></Route>
       </Route>
     </Routes>

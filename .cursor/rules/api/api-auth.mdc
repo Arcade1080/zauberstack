@@ -1,7 +1,7 @@
 ---
-description: Useful for server side functionality
+description: 
 globs: 
-alwaysApply: false
+alwaysApply: true
 ---
 # Authentication & Authorization
 

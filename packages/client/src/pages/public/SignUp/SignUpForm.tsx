@@ -12,11 +12,11 @@ import {
 } from '@mantine/core';
 import { Link } from 'react-router-dom';
 import * as Yup from 'yup';
+import { IconBrandGoogle } from '@tabler/icons-react';
 import FormBase, { FORM_MODE } from '../../../components/forms/FormBase';
 import { useAcceptInvitationMutation } from '../../../hooks/useAcceptInvitationMutation';
 import { useSignUpMutation } from '../../../hooks/useSignUpMutation';
 import { Paths } from '../../../routes/paths';
-import { IconBrandGoogle } from '@tabler/icons-react';
 
 export type SignUpFormValues = {
   owner: {

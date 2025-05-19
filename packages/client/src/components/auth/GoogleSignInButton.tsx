@@ -1,7 +1,7 @@
 import { Button } from '@mantine/core';
+import { useState } from 'react';
 import { GoogleIcon } from './GoogleIcon';
 import SupabaseAuthService from '../../services/SupabaseAuthService';
-import { useState } from 'react';
 
 interface GoogleSignInButtonProps {
   fullWidth?: boolean;

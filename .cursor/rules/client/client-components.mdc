@@ -1,7 +1,7 @@
 ---
-description: Useful for client side functionality
+description: 
 globs: 
-alwaysApply: false
+alwaysApply: true
 ---
 # Component Patterns
 

@@ -1,5 +1,5 @@
-import supabase from '../lib/supabaseClient';
 import { User } from '@supabase/supabase-js';
+import supabase from '../lib/supabaseClient';
 
 export interface SignInCredentials {
   email: string;
@@ -39,7 +39,7 @@ class SupabaseAuthService {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: window.location.origin + '/auth/callback',
+        redirectTo: `${window.location.origin}/auth/callback`,
       },
     });
 

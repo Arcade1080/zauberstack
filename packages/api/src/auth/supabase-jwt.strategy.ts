@@ -3,6 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from 'nestjs-prisma';
+import { GraphQLApiErrorUserNotFound } from '../errors/graphql/UserNotFoundGraphQLApiError';
 
 @Injectable()
 export class SupabaseJwtStrategy extends PassportStrategy(
@@ -35,7 +36,7 @@ export class SupabaseJwtStrategy extends PassportStrategy(
     });
 
     if (!user) {
-      return null;
+      throw new GraphQLApiErrorUserNotFound();
     }
 
     return user;
